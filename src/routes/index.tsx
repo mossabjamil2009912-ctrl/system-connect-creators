@@ -12,6 +12,7 @@ import { PLATFORMS, missingMedia, overLimit, platformById, type PlatformId } fro
 import { useHistory, useSettings } from "@/lib/store";
 import { publishPost } from "@/lib/publish.functions";
 import { toInstagramImage } from "@/lib/instagram-image";
+import icon from "@/assets/arsh-throne-icon-transparent.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -165,14 +166,14 @@ function Composer() {
       <section className="rounded-2xl border border-border bg-card p-5">
         <h2 className="mb-3 font-bold">معاينة المنشور</h2>
         <Tabs defaultValue="facebook" dir="rtl">
-          <TabsList className="flex h-auto flex-wrap">
-            {PLATFORMS.map((p) => <TabsTrigger key={p.id} value={p.id}>{p.name}</TabsTrigger>)}
+          <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
+            {PLATFORMS.map((p) => <TabsTrigger key={p.id} value={p.id} className="shrink-0">{p.name}</TabsTrigger>)}
           </TabsList>
           {PLATFORMS.map((p) => (
             <TabsContent key={p.id} value={p.id}>
               <div className="mt-3 overflow-hidden rounded-xl border border-border bg-background">
                 <div className="flex items-center gap-2 border-b border-border p-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-sm font-bold text-primary-foreground">ع</div>
+                  <img src={icon} alt="" className="h-9 w-9 shrink-0 rounded-full border border-border bg-background object-contain p-0.5" />
                   <div>
                     <div className="text-sm font-bold">عرش الهندسة</div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground"><PlatformDot hue={p.hue} /> {p.name} · الآن</div>

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlatformDot } from "@/components/AppShell";
@@ -22,6 +23,13 @@ export const Route = createFileRoute("/settings")({
 
 function SettingsPage() {
   const [settings, setSettings] = useSettings();
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const save = () => {
+    const next = { ...settings };
+    for (const [id, v] of Object.entries(draft)) next[id as keyof typeof next] = { target: v.trim(), enabled: true };
+    setSettings(next);
+    toast.success("تم حفظ الإعدادات");
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -35,14 +43,14 @@ function SettingsPage() {
             <p className="text-xs text-muted-foreground">{p.setup}</p>
             <Input
               placeholder={p.id === "telegram" ? "@arsh_channel" : p.id === "whatsapp" ? "967xxxxxxxxx" : "معرّف الحساب أو الصفحة"}
-              defaultValue={settings[p.id]?.target ?? ""}
-              onBlur={(e) => setSettings({ ...settings, [p.id]: { target: e.target.value.trim(), enabled: true } })}
+              value={draft[p.id] ?? settings[p.id]?.target ?? ""}
+              onChange={(e) => setDraft({ ...draft, [p.id]: e.target.value })}
               dir="ltr"
             />
           </div>
         ))}
       </div>
-      <Button onClick={() => toast.success("تم حفظ الإعدادات")} className="bg-gold text-primary-foreground">حفظ</Button>
+      <Button onClick={save} size="lg" className="w-full bg-gold font-bold text-primary-foreground sm:w-auto">حفظ</Button>
     </div>
   );
 }
