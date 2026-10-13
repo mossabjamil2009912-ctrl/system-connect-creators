@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ImagePlus, Send, X } from "lucide-react";
+import { ImagePlus, Send, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -50,6 +50,28 @@ function Composer() {
     const r = new FileReader();
     r.onload = () => setImage(r.result as string);
     r.readAsDataURL(f);
+  };
+
+  const shareWhatsApp = async () => {
+    if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return; }
+    try {
+      if (image && navigator.canShare) {
+        const blob = await (await fetch(image)).blob();
+        const file = new File([blob], "arsh-post.jpg", { type: blob.type || "image/jpeg" });
+        if (navigator.canShare({ files: [file] })) {
+          if (full) await navigator.clipboard?.writeText(full).catch(() => {});
+          await navigator.share({ files: [file], text: full });
+          return;
+        }
+      }
+      if (!image && navigator.share) { await navigator.share({ text: full }); return; }
+      if (full) await navigator.clipboard?.writeText(full).catch(() => {});
+      window.open(`https://wa.me/?text=${encodeURIComponent(full)}`, "_blank");
+      if (image) toast.info("تم نسخ النص — أرفق الصورة يدوياً في واتساب");
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      toast.error("تعذّر فتح المشاركة");
+    }
   };
 
   const submit = async () => {
@@ -131,6 +153,13 @@ function Composer() {
         <Button onClick={submit} disabled={busy} size="lg" className="w-full bg-gold text-base font-bold text-primary-foreground">
           <Send className="h-4 w-4" /> {busy ? "جاري النشر..." : `انشر في ${selected.length} منصات`}
         </Button>
+
+        <Button onClick={shareWhatsApp} variant="outline" size="lg" className="w-full text-base font-bold">
+          <Share2 className="h-4 w-4" /> مشاركة في واتساب (حالتي + القناة)
+        </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          تفتح نافذة واتساب والصورة والنص جاهزان — اختر «حالتي» وقناتك معاً ثم أرسل.
+        </p>
       </section>
 
       <section className="rounded-2xl border border-border bg-card p-5">
