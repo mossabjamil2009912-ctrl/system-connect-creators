@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { FileText, ImagePlus, Send, Share2, Trash2, X } from "lucide-react";
 import { TEMPLATES } from "@/lib/templates";
 import { DesignGallery } from "@/components/DesignGallery";
+import { AiAssistant } from "@/components/AiAssistant";
 
 const DRAFT_KEY = "arsh-draft";
 import { Button } from "@/components/ui/button";
@@ -140,6 +141,8 @@ function Composer() {
             ))}
           </div>
         </div>
+
+        <AiAssistant onResult={(t, g) => { setText(t); setTags(g); }} />
 
         <div className="space-y-2">
           <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="ماذا تريد أن تنشر اليوم؟" className="min-h-40 text-base" />
