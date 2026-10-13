@@ -11,6 +11,7 @@ import { PlatformDot } from "@/components/AppShell";
 import { PLATFORMS, missingMedia, overLimit, platformById, type PlatformId } from "@/lib/platforms";
 import { useHistory, useSettings } from "@/lib/store";
 import { publishPost } from "@/lib/publish.functions";
+import { toInstagramImage } from "@/lib/instagram-image";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,10 +57,12 @@ function Composer() {
     if (!selected.length) { toast.error("اختر منصة واحدة على الأقل"); return; }
     setBusy(true);
     try {
+      const igImage = image && selected.includes("instagram") ? await toInstagramImage(image) : undefined;
       const results = await publish({
         data: {
           text: full,
           imageDataUrl: image,
+          igImageDataUrl: igImage,
           targets: selected.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
         },
       });
