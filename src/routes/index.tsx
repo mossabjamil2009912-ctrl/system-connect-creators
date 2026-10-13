@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ImagePlus, Send, Share2, X } from "lucide-react";
+import { FileText, ImagePlus, Send, Share2, Trash2, X } from "lucide-react";
+import { TEMPLATES } from "@/lib/templates";
+
+const DRAFT_KEY = "arsh-draft";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -34,9 +37,28 @@ function Composer() {
   const [image, setImage] = useState<string>();
   const [selected, setSelected] = useState<PlatformId[]>(PLATFORMS.map((p) => p.id));
   const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [history, setHistory] = useHistory();
   const [settings] = useSettings();
   const publish = useServerFn(publishPost);
+
+  useEffect(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? "{}") as { text?: string; tags?: string; image?: string };
+      if (d.text) setText(d.text);
+      if (d.tags) setTags(d.tags);
+      if (d.image) setImage(d.image);
+    } catch { /* ignore */ }
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ text, tags, image })); }
+    catch { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ text, tags })); } catch { /* ignore */ } }
+  }, [text, tags, image, loaded]);
+
+  const clearDraft = () => { setText(""); setTags(""); setImage(undefined); localStorage.removeItem(DRAFT_KEY); };
 
   const full = [text.trim(), tags.trim()].filter(Boolean).join("\n\n");
   const tooLong = overLimit(full, selected);
@@ -107,10 +129,26 @@ function Composer() {
           <p className="text-sm text-muted-foreground">اكتب مرة واحدة، وانشر في كل المنصات.</p>
         </div>
 
+        <div>
+          <div className="mb-2 flex items-center gap-1 text-sm font-bold"><FileText className="h-4 w-4 text-primary" /> قوالب جاهزة</div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {TEMPLATES.map((t) => (
+              <button key={t.name} onClick={() => { setText(t.text); setTags(t.tags); }} className="shrink-0 rounded-full border border-primary/40 bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-primary hover:text-primary-foreground">
+                {t.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="ماذا تريد أن تنشر اليوم؟" className="min-h-40 text-base" />
           <Textarea value={tags} onChange={(e) => setTags(e.target.value)} placeholder="#عرش_الهندسة #تطبيقات #اليمن" className="min-h-12" />
-          <div className="text-xs text-muted-foreground">{full.length} حرف</div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{full.length} حرف {(text || tags) && "· المسودة محفوظة تلقائياً"}</span>
+            {(text || tags || image) && (
+              <button onClick={clearDraft} className="flex items-center gap-1 text-destructive"><Trash2 className="h-3 w-3" /> مسح</button>
+            )}
+          </div>
         </div>
 
         {image ? (

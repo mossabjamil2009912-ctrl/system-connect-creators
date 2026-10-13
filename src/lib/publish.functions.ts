@@ -124,3 +124,43 @@ export const publishPost = createServerFn({ method: "POST" })
     }
     return results;
   });
+
+export const checkConnections = createServerFn({ method: "POST" })
+  .inputValidator((d: { telegramTarget?: string }) => d)
+  .handler(async ({ data }) => {
+    const out: Record<string, { ok: boolean; message: string }> = {};
+    const token = process.env["FACEBOOK_PAGE_ACCESS_TOKEN"];
+    const pageId = process.env["FACEBOOK_PAGE_ID"];
+    const igId = process.env["INSTAGRAM_BUSINESS_ACCOUNT_ID"];
+    try {
+      if (!token || !pageId) out["facebook"] = { ok: false, message: "غير مربوط" };
+      else {
+        const b = await (await fetch(`${GRAPH}/${pageId}?fields=name&access_token=${token}`)).json() as { name?: string; error?: { message: string } };
+        out["facebook"] = b.name ? { ok: true, message: `متصل: ${b.name}` } : { ok: false, message: b.error?.message ?? "فشل" };
+      }
+    } catch { out["facebook"] = { ok: false, message: "تعذر الاتصال" }; }
+    try {
+      if (!token || !igId) out["instagram"] = { ok: false, message: "غير مربوط" };
+      else {
+        const b = await (await fetch(`${GRAPH}/${igId}?fields=username&access_token=${token}`)).json() as { username?: string; error?: { message: string } };
+        out["instagram"] = b.username ? { ok: true, message: `متصل: @${b.username}` } : { ok: false, message: b.error?.message ?? "فشل" };
+      }
+    } catch { out["instagram"] = { ok: false, message: "تعذر الاتصال" }; }
+    try {
+      const lovable = process.env["LOVABLE_API_KEY"];
+      const tg = process.env["TELEGRAM_API_KEY"];
+      if (!lovable || !tg) out["telegram"] = { ok: false, message: "غير مربوط" };
+      else {
+        const headers = { Authorization: `Bearer ${lovable}`, "X-Connection-Api-Key": tg, "Content-Type": "application/json" };
+        const base = "https://connector-gateway.lovable.dev/telegram";
+        if (data.telegramTarget) {
+          const b = await (await fetch(`${base}/getChat`, { method: "POST", headers, body: JSON.stringify({ chat_id: data.telegramTarget }) })).json() as { ok?: boolean; result?: { title?: string }; description?: string };
+          out["telegram"] = b.ok ? { ok: true, message: `متصل: ${b.result?.title ?? data.telegramTarget}` } : { ok: false, message: b.description ?? "القناة غير صحيحة" };
+        } else {
+          const b = await (await fetch(`${base}/getMe`, { method: "POST", headers, body: "{}" })).json() as { ok?: boolean; result?: { username?: string } };
+          out["telegram"] = b.ok ? { ok: true, message: `البوت يعمل: @${b.result?.username} — أضف القناة` } : { ok: false, message: "فشل" };
+        }
+      }
+    } catch { out["telegram"] = { ok: false, message: "تعذر الاتصال" }; }
+    return out;
+  });
