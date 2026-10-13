@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FileText, ImagePlus, Send, Share2, Trash2, X } from "lucide-react";
 import { TEMPLATES } from "@/lib/templates";
+import { DesignGallery } from "@/components/DesignGallery";
 
 const DRAFT_KEY = "arsh-draft";
 import { Button } from "@/components/ui/button";
@@ -159,10 +160,13 @@ function Composer() {
             </button>
           </div>
         ) : (
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input p-6 text-muted-foreground hover:text-primary">
-            <ImagePlus className="h-5 w-5" /> أضف صورة أو تصميم
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-          </label>
+          <div className="space-y-2">
+            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input p-6 text-muted-foreground hover:text-primary">
+              <ImagePlus className="h-5 w-5" /> أضف صورة من جهازك
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+            </label>
+            <DesignGallery onPick={setImage} />
+          </div>
         )}
 
         <div>
