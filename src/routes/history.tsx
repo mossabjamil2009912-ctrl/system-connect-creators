@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Trash2 } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { RotateCcw, Trash2 } from "lucide-react";
 import { PlatformDot } from "@/components/AppShell";
 import { platformById, type PostStatus } from "@/lib/platforms";
 import { useHistory } from "@/lib/store";
@@ -22,6 +22,7 @@ const LABEL: Record<PostStatus, string> = { success: "✅ تم", pending: "⏳ �
 
 function History() {
   const [history, setHistory] = useHistory();
+  const navigate = useNavigate();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -38,6 +39,16 @@ function History() {
           <div className="min-w-0 flex-1 space-y-3">
             <div className="text-xs text-muted-foreground">{new Date(h.createdAt).toLocaleString("ar")}</div>
             <p className="line-clamp-3 whitespace-pre-wrap text-sm">{h.text}</p>
+            <button
+              onClick={() => {
+                try { localStorage.setItem("arsh-draft", JSON.stringify({ text: h.text, tags: "", image: h.image })); }
+                catch { localStorage.setItem("arsh-draft", JSON.stringify({ text: h.text, tags: "" })); }
+                navigate({ to: "/" });
+              }}
+              className="flex items-center gap-1 rounded-full border border-primary/40 bg-accent px-3 py-1 text-xs font-medium text-accent-foreground hover:bg-primary hover:text-primary-foreground"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> إعادة استخدام
+            </button>
             <div className="flex flex-wrap gap-2">
               {h.results.map((r) => (
                 <span key={r.platform} title={r.message} className="flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs">
