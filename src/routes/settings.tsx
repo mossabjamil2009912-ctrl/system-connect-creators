@@ -23,6 +23,8 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
+const READY = PLATFORMS.filter((p) => ["facebook", "instagram", "telegram"].includes(p.id));
+
 function SettingsPage() {
   const [settings, setSettings] = useSettings();
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -49,9 +51,12 @@ function SettingsPage() {
         <h1 className="text-2xl font-extrabold">ربط المنصات</h1>
         <p className="text-sm text-muted-foreground">المفاتيح السرية تُحفظ بأمان في الخادم، وهنا تكتب فقط وجهة النشر (القناة، الصفحة، الرقم).</p>
       </div>
+      {([["منصات متصلة وجاهزة 🟢", READY], ["منصات قيد الربط ⏳", PLATFORMS.filter((p) => !READY.includes(p))]] as const).map(([title, list]) => (
+      <section key={title} className="space-y-3">
+      <h2 className="font-bold">{title}</h2>
       <div className="grid gap-4 md:grid-cols-2">
-        {PLATFORMS.map((p) => (
-          <div key={p.id} className="space-y-3 rounded-2xl border border-border bg-card p-4">
+        {list.map((p) => (
+          <div key={p.id} className={`space-y-3 rounded-2xl border bg-card p-4 ${READY.includes(p) ? "border-s-4 border-success" : "border-border opacity-90"}`}>
             <div className="flex items-center gap-2 font-bold"><PlatformDot hue={p.hue} /> {p.name}</div>
             <p className="text-xs text-muted-foreground">{p.setup}</p>
             <Input
@@ -68,6 +73,8 @@ function SettingsPage() {
           </div>
         ))}
       </div>
+      </section>
+      ))}
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button onClick={save} size="lg" className="w-full bg-gold font-bold text-primary-foreground sm:w-auto">حفظ</Button>
         <Button onClick={runCheck} disabled={checking} variant="outline" size="lg" className="w-full font-bold sm:w-auto">

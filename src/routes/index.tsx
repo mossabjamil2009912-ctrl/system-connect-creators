@@ -2,15 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { FileText, ImagePlus, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Eye, FileText, Heart, ImagePlus, MessageCircle, PenLine, Repeat2, Send, Share2, ThumbsUp, Trash2, X } from "lucide-react";
 import { TEMPLATES } from "@/lib/templates";
 import { DesignGallery, DESIGNS, toDataUrl } from "@/components/DesignGallery";
 import { AiAssistant } from "@/components/AiAssistant";
 
 const DRAFT_KEY = "arsh-draft";
+const QUICK_TAGS = ["#عرش_الهندسة", "#تطبيقات_جوال", "#أنظمة_ويندوز", "#ربط_API", "#صنعاء_اليمن"];
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlatformDot } from "@/components/AppShell";
 import { PLATFORMS, missingMedia, overLimit, platformById, type PlatformId } from "@/lib/platforms";
@@ -40,6 +40,7 @@ function Composer() {
   const [selected, setSelected] = useState<PlatformId[]>(PLATFORMS.map((p) => p.id));
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const [history, setHistory] = useHistory();
   const [settings] = useSettings();
   const publish = useServerFn(publishPost);
@@ -124,8 +125,16 @@ function Composer() {
   };
 
   return (
+    <div className="space-y-4">
+    <div className="sticky top-[86px] z-10 grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 shadow-sm lg:hidden">
+      {([["edit", "تحرير المنشور", PenLine], ["preview", "معاينة مباشرة", Eye]] as const).map(([v, l, I]) => (
+        <button key={v} onClick={() => setMobileView(v)} className={`flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-bold transition-colors ${mobileView === v ? "bg-gold text-primary-foreground shadow-sm" : "text-muted-foreground"}`}>
+          <I className="h-4 w-4" /> {l}
+        </button>
+      ))}
+    </div>
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
-      <section className="min-w-0 space-y-5 rounded-2xl border border-border bg-card p-5 shadow-gold">
+      <section className={`${mobileView === "edit" ? "" : "hidden"} lg:block min-w-0 space-y-5 rounded-2xl border border-border bg-card p-5 shadow-gold`}>
         <div>
           <h1 className="text-2xl font-extrabold">منشور جديد</h1>
           <p className="text-sm text-muted-foreground">اكتب مرة واحدة، وانشر في كل المنصات.</p>
@@ -147,6 +156,17 @@ function Composer() {
         <div className="space-y-2">
           <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="ماذا تريد أن تنشر اليوم؟" className="min-h-40 text-base" />
           <Textarea value={tags} onChange={(e) => setTags(e.target.value)} placeholder="#عرش_الهندسة #تطبيقات #اليمن" className="min-h-12" />
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {QUICK_TAGS.map((t) => {
+              const on = tags.split(/\s+/).includes(t);
+              return (
+                <button key={t} onClick={() => setTags(on ? tags.split(/\s+/).filter((x) => x && x !== t).join(" ") : [tags.trim(), t].filter(Boolean).join(" "))}
+                  className={`shrink-0 rounded-full border px-2.5 py-1 text-xs transition-colors ${on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-secondary text-muted-foreground hover:text-foreground"}`}>
+                  {t}
+                </button>
+              );
+            })}
+          </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{full.length} حرف {(text || tags) && "· المسودة محفوظة تلقائياً"}</span>
             {(text || tags || image) && (
@@ -174,18 +194,23 @@ function Composer() {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-bold">المنصات</h2>
+            <h2 className="font-bold">المنصات <span className="text-xs font-normal text-muted-foreground">· تم تحديد {selected.length} من {PLATFORMS.length}</span></h2>
             <button className="text-xs text-primary" onClick={() => setSelected(selected.length === PLATFORMS.length ? [] : PLATFORMS.map((p) => p.id))}>
               {selected.length === PLATFORMS.length ? "إلغاء الكل" : "تحديد الكل"}
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {PLATFORMS.map((p) => (
-              <label key={p.id} className="flex items-center justify-between rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm">
-                <span className="flex items-center gap-2"><PlatformDot hue={p.hue} /> {p.name}</span>
-                <Switch checked={selected.includes(p.id)} onCheckedChange={() => toggle(p.id)} />
-              </label>
-            ))}
+            {PLATFORMS.map((p) => {
+              const on = selected.includes(p.id);
+              return (
+                <button key={p.id} type="button" onClick={() => toggle(p.id)} aria-pressed={on}
+                  className={`relative flex min-w-0 items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-start text-sm transition-all ${on ? "border-primary bg-accent font-bold text-accent-foreground shadow-sm" : "border-border bg-secondary text-muted-foreground"}`}>
+                  <PlatformDot hue={p.hue} />
+                  <span className="truncate">{p.name}</span>
+                  {on && <Check className="ms-auto h-4 w-4 shrink-0 text-primary" />}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -208,7 +233,7 @@ function Composer() {
         </p>
       </section>
 
-      <section className="min-w-0 rounded-2xl border border-border bg-card p-5">
+      <section className={`${mobileView === "preview" ? "" : "hidden"} lg:block min-w-0 rounded-2xl border border-border bg-card p-5`}>
         <h2 className="mb-3 font-bold">معاينة المنشور</h2>
         <Tabs defaultValue="facebook" dir="rtl">
           <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
@@ -224,15 +249,37 @@ function Composer() {
                     <div className="flex items-center gap-1 text-xs text-muted-foreground"><PlatformDot hue={p.hue} /> {p.name} · الآن</div>
                   </div>
                 </div>
-                {image && <img src={image} alt="" className="max-h-80 w-full object-cover" />}
-                <p className="whitespace-pre-wrap p-3 text-sm">
-                  {full ? full.slice(0, p.limit) : <span className="text-muted-foreground">سيظهر نص منشورك هنا...</span>}
-                </p>
+                {p.id === "instagram" ? (
+                  <>
+                    {image ? <img src={image} alt="" className="aspect-square w-full object-cover" /> : <div className="flex aspect-square items-center justify-center bg-muted text-sm text-muted-foreground">إنستغرام يحتاج صورة</div>}
+                    <div className="flex items-center gap-3 p-3 pb-1"><Heart className="h-5 w-5" /><MessageCircle className="h-5 w-5" /><Send className="h-5 w-5" /><Bookmark className="ms-auto h-5 w-5" /></div>
+                    <p className="whitespace-pre-wrap px-3 pb-3 text-sm"><b>arsh_engineering</b> {full ? full.slice(0, p.limit) : <span className="text-muted-foreground">سيظهر نص منشورك هنا...</span>}</p>
+                  </>
+                ) : p.id === "telegram" ? (
+                  <div className="bg-secondary p-3">
+                    <div className="max-w-[90%] overflow-hidden rounded-2xl rounded-ss-sm border border-border bg-background shadow-sm">
+                      {image && <img src={image} alt="" className="max-h-72 w-full object-cover" />}
+                      <p className="whitespace-pre-wrap p-3 pb-1 text-sm">{full ? full.slice(0, p.limit) : <span className="text-muted-foreground">سيظهر نص منشورك هنا...</span>}</p>
+                      <div className="flex items-center justify-end gap-1 px-3 pb-2 text-[11px] text-muted-foreground"><Eye className="h-3 w-3" /> 1.2K · الآن</div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="whitespace-pre-wrap p-3 text-sm">{full ? full.slice(0, p.limit) : <span className="text-muted-foreground">سيظهر نص منشورك هنا...</span>}</p>
+                    {image && <img src={image} alt="" className="max-h-80 w-full object-cover" />}
+                    <div className="grid grid-cols-3 border-t border-border text-xs text-muted-foreground">
+                      {(p.id === "twitter" ? [[MessageCircle, "رد"], [Repeat2, "إعادة نشر"], [Heart, "إعجاب"]] : [[ThumbsUp, "أعجبني"], [MessageCircle, "تعليق"], [Share2, "مشاركة"]] as const).map(([I, l]) => (
+                        <div key={l as string} className="flex items-center justify-center gap-1 py-2.5"><I className="h-4 w-4" /> {l as string}</div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </TabsContent>
           ))}
         </Tabs>
       </section>
+    </div>
     </div>
   );
 }
