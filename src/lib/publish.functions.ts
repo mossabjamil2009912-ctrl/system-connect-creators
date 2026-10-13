@@ -3,7 +3,7 @@ import type { PlatformId, PostResult } from "./platforms";
 
 interface Input {
   text: string;
-  imageDataUrl?: string;
+  imageDataUrl?: string | undefined;
   targets: { platform: PlatformId; target: string }[];
 }
 

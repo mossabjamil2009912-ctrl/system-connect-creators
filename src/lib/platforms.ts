@@ -32,4 +32,4 @@ export function missingMedia(hasMedia: boolean, selected: PlatformId[]): Platfor
 
 export type PostStatus = "success" | "pending" | "error";
 export interface PostResult { platform: PlatformId; status: PostStatus; message: string }
-export interface PostRecord { id: string; text: string; image?: string; createdAt: string; results: PostResult[] }
+export interface PostRecord { id: string; text: string; image?: string | undefined; createdAt: string; results: PostResult[] }
