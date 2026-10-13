@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import logo from "@/assets/arsh-throne-icon-transparent.png";
+import logo from "@/assets/arsh-logo-official.png";
 
 const NAV = [
   { to: "/", label: "نشر" },
@@ -13,12 +13,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5">
-          <Link to="/" className="flex min-w-0 items-center gap-2">
-            <img src={logo} alt="عرش الهندسة" className="h-11 w-11 shrink-0 object-contain" />
-            <div className="min-w-0 leading-tight">
-              <div className="truncate text-base font-extrabold text-primary sm:text-lg">عرش الهندسة</div>
-              <div className="truncate text-[11px] text-muted-foreground">منصة النشر الموحّد</div>
-            </div>
+          <Link to="/" className="flex min-w-0 items-center">
+            <img src={logo} alt="عرش الهندسة للحلول التقنية الذكية" className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24" />
           </Link>
           <nav className="flex shrink-0 gap-1 text-sm">
             {NAV.map((n) => (
