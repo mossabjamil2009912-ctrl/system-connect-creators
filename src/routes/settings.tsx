@@ -32,8 +32,8 @@ function SettingsPage() {
   const runCheck = async () => {
     setChecking(true);
     try {
-      const tg = (draft.telegram ?? settings.telegram?.target ?? "").trim();
-      setStatus(await check({ data: { telegramTarget: tg || undefined } }));
+      const tg = (draft["telegram"] ?? settings.telegram?.target ?? "").trim();
+      setStatus(await check({ data: { telegramTarget: tg } }));
     } catch { toast.error("تعذّر الفحص"); }
     finally { setChecking(false); }
   };
@@ -61,8 +61,8 @@ function SettingsPage() {
               dir="ltr"
             />
             {status[p.id] && (
-              <div className={`text-xs font-medium ${status[p.id].ok ? "text-primary" : "text-destructive"}`}>
-                {status[p.id].ok ? "🟢" : "🔴"} {status[p.id].message}
+              <div className={`text-xs font-medium ${status[p.id]?.ok ? "text-primary" : "text-destructive"}`}>
+                {status[p.id]?.ok ? "🟢" : "🔴"} {status[p.id]?.message}
               </div>
             )}
           </div>
