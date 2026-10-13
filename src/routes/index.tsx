@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FileText, ImagePlus, Send, Share2, Trash2, X } from "lucide-react";
 import { TEMPLATES } from "@/lib/templates";
-import { DesignGallery } from "@/components/DesignGallery";
+import { DesignGallery, DESIGNS, toDataUrl } from "@/components/DesignGallery";
 import { AiAssistant } from "@/components/AiAssistant";
 
 const DRAFT_KEY = "arsh-draft";
@@ -135,7 +135,7 @@ function Composer() {
           <div className="mb-2 flex items-center gap-1 text-sm font-bold"><FileText className="h-4 w-4 text-primary" /> قوالب جاهزة</div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {TEMPLATES.map((t) => (
-              <button key={t.name} onClick={() => { setText(t.text); setTags(t.tags); }} className="shrink-0 rounded-full border border-primary/40 bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-primary hover:text-primary-foreground">
+              <button key={t.name} onClick={() => { setText(t.text); setTags(t.tags); const d = DESIGNS.find((x) => x.label === t.design); if (d) toDataUrl(d.src).then(setImage).catch(() => {}); }} className="shrink-0 rounded-full border border-primary/40 bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-primary hover:text-primary-foreground">
                 {t.name}
               </button>
             ))}

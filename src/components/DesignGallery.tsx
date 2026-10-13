@@ -12,7 +12,7 @@ import reports from "@/assets/gallery/project-reports.jpg";
 import solar from "@/assets/gallery/solar-sales.jpg";
 import cover from "@/assets/gallery/cover.png";
 
-const DESIGNS = [
+export const DESIGNS = [
   { src: mobile, label: "تطبيقات الجوال" },
   { src: windows, label: "أنظمة ويندوز" },
   { src: api, label: "ربط API" },
@@ -24,7 +24,7 @@ const DESIGNS = [
   { src: cover, label: "غلاف الصفحة" },
 ];
 
-async function toDataUrl(src: string) {
+export async function toDataUrl(src: string) {
   const blob = await (await fetch(src)).blob();
   return new Promise<string>((res, rej) => {
     const r = new FileReader();
