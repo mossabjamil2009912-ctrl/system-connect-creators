@@ -9,11 +9,10 @@ interface Input {
 }
 
 async function sendTelegram(chatId: string, text: string, image?: string): Promise<PostResult> {
-  const lovable = process.env["LOVABLE_API_KEY"];
   const tg = process.env["TELEGRAM_API_KEY"];
-  if (!lovable || !tg) return { platform: "telegram", status: "pending", message: "تليجرام غير مربوط بعد" };
-  const headers = { Authorization: `Bearer ${lovable}`, "X-Connection-Api-Key": tg };
-  const base = "https://connector-gateway.lovable.dev/telegram";
+  if (!tg) return { platform: "telegram", status: "pending", message: "تليجرام غير مربوط بعد" };
+  const headers = {};
+  const base = `https://api.telegram.org/bot${tg}`;
   let res: Response;
   if (image) {
     const blob = await (await fetch(image)).blob();
@@ -147,12 +146,11 @@ export const checkConnections = createServerFn({ method: "POST" })
       }
     } catch { out["instagram"] = { ok: false, message: "تعذر الاتصال" }; }
     try {
-      const lovable = process.env["LOVABLE_API_KEY"];
       const tg = process.env["TELEGRAM_API_KEY"];
-      if (!lovable || !tg) out["telegram"] = { ok: false, message: "غير مربوط" };
+      if (!tg) out["telegram"] = { ok: false, message: "غير مربوط" };
       else {
-        const headers = { Authorization: `Bearer ${lovable}`, "X-Connection-Api-Key": tg, "Content-Type": "application/json" };
-        const base = "https://connector-gateway.lovable.dev/telegram";
+        const headers = { "Content-Type": "application/json" };
+        const base = `https://api.telegram.org/bot${tg}`;
         if (data.telegramTarget) {
           const b = await (await fetch(`${base}/getChat`, { method: "POST", headers, body: JSON.stringify({ chat_id: data.telegramTarget }) })).json() as { ok?: boolean; result?: { title?: string }; description?: string };
           out["telegram"] = b.ok ? { ok: true, message: `متصل: ${b.result?.title ?? data.telegramTarget}` } : { ok: false, message: b.description ?? "القناة غير صحيحة" };
