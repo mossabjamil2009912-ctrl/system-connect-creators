@@ -100,8 +100,8 @@ function Composer() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-      <section className="space-y-5 rounded-2xl border border-border bg-card p-5 shadow-gold">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
+      <section className="min-w-0 space-y-5 rounded-2xl border border-border bg-card p-5 shadow-gold">
         <div>
           <h1 className="text-2xl font-extrabold">منشور جديد</h1>
           <p className="text-sm text-muted-foreground">اكتب مرة واحدة، وانشر في كل المنصات.</p>
@@ -163,7 +163,7 @@ function Composer() {
         </p>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-5">
+      <section className="min-w-0 rounded-2xl border border-border bg-card p-5">
         <h2 className="mb-3 font-bold">معاينة المنشور</h2>
         <Tabs defaultValue="facebook" dir="rtl">
           <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
