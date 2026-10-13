@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { PlatformDot } from "@/components/AppShell";
 import { PLATFORMS } from "@/lib/platforms";
 import { useSettings } from "@/lib/store";
+import { useServerFn } from "@tanstack/react-start";
+import { checkConnections } from "@/lib/publish.functions";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -24,6 +26,17 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const [settings, setSettings] = useSettings();
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<Record<string, { ok: boolean; message: string }>>({});
+  const [checking, setChecking] = useState(false);
+  const check = useServerFn(checkConnections);
+  const runCheck = async () => {
+    setChecking(true);
+    try {
+      const tg = (draft.telegram ?? settings.telegram?.target ?? "").trim();
+      setStatus(await check({ data: { telegramTarget: tg || undefined } }));
+    } catch { toast.error("تعذّر الفحص"); }
+    finally { setChecking(false); }
+  };
   const save = () => {
     const next = { ...settings };
     for (const [id, v] of Object.entries(draft)) next[id as keyof typeof next] = { target: v.trim(), enabled: true };
@@ -47,10 +60,20 @@ function SettingsPage() {
               onChange={(e) => setDraft({ ...draft, [p.id]: e.target.value })}
               dir="ltr"
             />
+            {status[p.id] && (
+              <div className={`text-xs font-medium ${status[p.id].ok ? "text-primary" : "text-destructive"}`}>
+                {status[p.id].ok ? "🟢" : "🔴"} {status[p.id].message}
+              </div>
+            )}
           </div>
         ))}
       </div>
-      <Button onClick={save} size="lg" className="w-full bg-gold font-bold text-primary-foreground sm:w-auto">حفظ</Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button onClick={save} size="lg" className="w-full bg-gold font-bold text-primary-foreground sm:w-auto">حفظ</Button>
+        <Button onClick={runCheck} disabled={checking} variant="outline" size="lg" className="w-full font-bold sm:w-auto">
+          {checking ? "جاري الفحص..." : "فحص الاتصال"}
+        </Button>
+      </div>
     </div>
   );
 }
