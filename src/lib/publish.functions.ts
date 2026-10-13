@@ -33,6 +33,72 @@ async function sendTelegram(chatId: string, text: string, image?: string): Promi
   return { platform: "telegram", status: "success", message: "تم النشر في القناة" };
 }
 
+const GRAPH = "https://graph.facebook.com/v21.0";
+
+async function uploadFbPhoto(image: string, caption: string, published: boolean) {
+  const token = process.env["FACEBOOK_PAGE_ACCESS_TOKEN"]!;
+  const pageId = process.env["FACEBOOK_PAGE_ID"]!;
+  const blob = await (await fetch(image)).blob();
+  const form = new FormData();
+  form.append("source", blob, "post.jpg");
+  form.append("caption", caption);
+  form.append("published", String(published));
+  form.append("access_token", token);
+  const res = await fetch(`${GRAPH}/${pageId}/photos`, { method: "POST", body: form });
+  const body = await res.json() as { id?: string; error?: { message: string } };
+  if (!res.ok || !body.id) throw new Error(body.error?.message ?? `فشل (${res.status})`);
+  return body.id;
+}
+
+async function sendFacebook(text: string, image?: string): Promise<PostResult> {
+  const token = process.env["FACEBOOK_PAGE_ACCESS_TOKEN"];
+  const pageId = process.env["FACEBOOK_PAGE_ID"];
+  if (!token || !pageId) return { platform: "facebook", status: "pending", message: "فيسبوك غير مربوط" };
+  if (image) {
+    await uploadFbPhoto(image, text, true);
+  } else {
+    const res = await fetch(`${GRAPH}/${pageId}/feed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, access_token: token }),
+    });
+    const body = await res.json() as { error?: { message: string } };
+    if (!res.ok) return { platform: "facebook", status: "error", message: body.error?.message ?? `فشل (${res.status})` };
+  }
+  return { platform: "facebook", status: "success", message: "تم النشر في الصفحة" };
+}
+
+async function sendInstagram(text: string, image?: string): Promise<PostResult> {
+  const token = process.env["FACEBOOK_PAGE_ACCESS_TOKEN"];
+  const igId = process.env["INSTAGRAM_BUSINESS_ACCOUNT_ID"];
+  if (!token || !igId) return { platform: "instagram", status: "pending", message: "إنستغرام غير مربوط" };
+  if (!image) return { platform: "instagram", status: "error", message: "إنستغرام يتطلب صورة" };
+  // Instagram needs a public image URL: host it as an unpublished Facebook photo first.
+  const photoId = await uploadFbPhoto(image, "", false);
+  const info = await (await fetch(`${GRAPH}/${photoId}?fields=images&access_token=${token}`)).json() as { images?: { source: string }[] };
+  const url = info.images?.[0]?.source;
+  if (!url) return { platform: "instagram", status: "error", message: "تعذر تجهيز رابط الصورة" };
+  const c = await fetch(`${GRAPH}/${igId}/media`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image_url: url, caption: text, access_token: token }),
+  });
+  const cb = await c.json() as { id?: string; error?: { message: string } };
+  if (!c.ok || !cb.id) return { platform: "instagram", status: "error", message: cb.error?.message ?? "فشل إنشاء المنشور" };
+  for (let i = 0; i < 10; i++) {
+    const p = await fetch(`${GRAPH}/${igId}/media_publish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ creation_id: cb.id, access_token: token }),
+    });
+    const pb = await p.json() as { id?: string; error?: { message: string; code?: number } };
+    if (p.ok && pb.id) return { platform: "instagram", status: "success", message: "تم النشر في إنستغرام" };
+    if (pb.error?.code !== 9007) return { platform: "instagram", status: "error", message: pb.error?.message ?? "فشل النشر" };
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  return { platform: "instagram", status: "error", message: "انتهت مهلة تجهيز الصورة" };
+}
+
 export const publishPost = createServerFn({ method: "POST" })
   .inputValidator((d: Input) => {
     if (!d.text?.trim() && !d.imageDataUrl) throw new Error("المنشور فارغ");
@@ -44,6 +110,10 @@ export const publishPost = createServerFn({ method: "POST" })
       try {
         if (t.platform === "telegram" && t.target) {
           results.push(await sendTelegram(t.target, data.text, data.imageDataUrl));
+        } else if (t.platform === "facebook") {
+          results.push(await sendFacebook(data.text, data.imageDataUrl));
+        } else if (t.platform === "instagram") {
+          results.push(await sendInstagram(data.text, data.imageDataUrl));
         } else {
           results.push({ platform: t.platform, status: "pending", message: "بانتظار ربط مفاتيح المنصة" });
         }
