@@ -45,15 +45,15 @@ function Composer() {
 
   const onFile = (f?: File) => {
     if (!f) return;
-    if (f.size > 4_000_000) return toast.error("الصورة أكبر من 4 ميجا");
+    if (f.size > 4_000_000) { toast.error("الصورة أكبر من 4 ميجا"); return; }
     const r = new FileReader();
     r.onload = () => setImage(r.result as string);
     r.readAsDataURL(f);
   };
 
   const submit = async () => {
-    if (!full && !image) return toast.error("اكتب نص المنشور أو أضف صورة");
-    if (!selected.length) return toast.error("اختر منصة واحدة على الأقل");
+    if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return; }
+    if (!selected.length) { toast.error("اختر منصة واحدة على الأقل"); return; }
     setBusy(true);
     try {
       const results = await publish({
