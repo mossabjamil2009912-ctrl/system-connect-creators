@@ -11,7 +11,7 @@ export function AiAssistant({ onResult }: { onResult: (text: string, tags: strin
   const [busy, setBusy] = useState(false);
 
   const run = async () => {
-    if (!idea.trim()) return toast.error("اكتب فكرة المنشور أولاً");
+    if (!idea.trim()) { toast.error("اكتب فكرة المنشور أولاً"); return; }
     setBusy(true);
     try {
       const r = await gen({ data: { idea } });
