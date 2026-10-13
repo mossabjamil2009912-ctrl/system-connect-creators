@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import logo from "@/assets/arsh-engineering-logo-gold-v2.png";
+import logo from "@/assets/arsh-logo-official.jpg";
 
 const NAV = [
   { to: "/", label: "نشر منشور" },
