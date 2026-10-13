@@ -4,6 +4,7 @@ import type { PlatformId, PostResult } from "./platforms";
 interface Input {
   text: string;
   imageDataUrl?: string | undefined;
+  igImageDataUrl?: string | undefined;
   targets: { platform: PlatformId; target: string }[];
 }
 
@@ -113,7 +114,7 @@ export const publishPost = createServerFn({ method: "POST" })
         } else if (t.platform === "facebook") {
           results.push(await sendFacebook(data.text, data.imageDataUrl));
         } else if (t.platform === "instagram") {
-          results.push(await sendInstagram(data.text, data.imageDataUrl));
+          results.push(await sendInstagram(data.text, data.igImageDataUrl ?? data.imageDataUrl));
         } else {
           results.push({ platform: t.platform, status: "pending", message: "بانتظار ربط مفاتيح المنصة" });
         }
