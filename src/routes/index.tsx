@@ -6,7 +6,8 @@ import { Bookmark, Check, Eye, FileText, Heart, ImagePlus, MessageCircle, PenLin
 import { TEMPLATES } from "@/lib/templates";
 import { DesignGallery, DESIGNS, toDataUrl } from "@/components/DesignGallery";
 import { AiAssistant } from "@/components/AiAssistant";
-import { TikTokCallback } from "@/components/TikTokConnect";
+import { TikTokCallback, getTikTokToken } from "@/components/TikTokConnect";
+import { imageToTikTokVideo } from "@/lib/tiktok-video";
 
 const DRAFT_KEY = "arsh-draft";
 const QUICK_TAGS = ["#عرش_الهندسة", "#تطبيقات_جوال", "#أنظمة_ويندوز", "#ربط_API", "#صنعاء_اليمن"];
@@ -107,11 +108,22 @@ function Composer() {
     setBusy(true);
     try {
       const igImage = image && selected.includes("instagram") ? await toInstagramImage(image) : undefined;
+      let tiktokToken: string | undefined;
+      let tiktokVideo: string | undefined;
+      if (selected.includes("tiktok")) {
+        tiktokToken = await getTikTokToken();
+        if (image && tiktokToken) {
+          toast.info("جارٍ تجهيز فيديو تيك توك…");
+          tiktokVideo = await imageToTikTokVideo(image);
+        }
+      }
       const results = await publish({
         data: {
           text: full,
           imageDataUrl: image,
           igImageDataUrl: igImage,
+          tiktokToken,
+          tiktokVideoDataUrl: tiktokVideo,
           targets: selected.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
         },
       });

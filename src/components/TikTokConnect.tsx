@@ -3,10 +3,22 @@ import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { tiktokAuthUrl, tiktokExchange } from "@/lib/tiktok.functions";
+import { tiktokAuthUrl, tiktokExchange, tiktokRefresh } from "@/lib/tiktok.functions";
 
 const KEY = "arsh-tiktok";
 type Saved = { accessToken: string; refreshToken: string; expiresAt: number; name: string };
+
+/** Returns a valid TikTok access token from this device, refreshing it when expired. */
+export async function getTikTokToken(): Promise<string | undefined> {
+  let s: Saved | null = null;
+  try { s = JSON.parse(localStorage.getItem(KEY) ?? "null"); } catch { /* ignore */ }
+  if (!s) return undefined;
+  if (s.expiresAt - Date.now() > 60_000) return s.accessToken;
+  if (!s.refreshToken) return undefined;
+  const t = await tiktokRefresh({ data: { refreshToken: s.refreshToken } });
+  localStorage.setItem(KEY, JSON.stringify({ ...t, name: t.name || s.name }));
+  return t.accessToken;
+}
 
 /** Handles TikTok's redirect back to the site root (?code=...&state=tiktok). */
 export function TikTokCallback() {
