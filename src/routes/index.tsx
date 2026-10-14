@@ -8,7 +8,6 @@ import { TEMPLATES } from "@/lib/templates";
 import { DesignGallery, DESIGNS, toDataUrl } from "@/components/DesignGallery";
 import { AiAssistant } from "@/components/AiAssistant";
 import { TikTokCallback } from "@/components/TikTokConnect";
-import { imageToTikTokVideo } from "@/lib/tiktok-video";
 
 const DRAFT_KEY = "arsh-draft";
 const QUICK_TAGS = ["#عرش_الهندسة", "#تطبيقات_جوال", "#أنظمة_ويندوز", "#ربط_API", "#صنعاء_اليمن"];
@@ -81,60 +80,85 @@ function Composer() {
     r.readAsDataURL(f);
   };
 
-  const shareWhatsApp = async () => {
-    if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return; }
+  const [followUps, setFollowUps] = useState<("whatsapp" | "tiktok")[]>([]);
+
+  const dataUrlToFile = (url: string, name: string) => {
+    const [head = "", b64 = ""] = url.split(",");
+    const mime = head.match(/:(.*?);/)?.[1] || "image/jpeg";
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new File([arr], name, { type: mime });
+  };
+
+  // Returns true when the share sheet opened and the user came back.
+  const shareTo = async (app: "whatsapp" | "tiktok"): Promise<boolean> => {
+    if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return false; }
     try {
+      if (full) navigator.clipboard?.writeText(full).catch(() => {});
       if (image && navigator.canShare) {
-        const blob = await (await fetch(image)).blob();
-        const file = new File([blob], "arsh-post.jpg", { type: blob.type || "image/jpeg" });
+        const file = dataUrlToFile(image, "arsh-post.jpg");
         if (navigator.canShare({ files: [file] })) {
-          if (full) await navigator.clipboard?.writeText(full).catch(() => {});
           await navigator.share({ files: [file], text: full });
-          return;
+          return true;
         }
       }
-      if (!image && navigator.share) { await navigator.share({ text: full }); return; }
-      if (full) await navigator.clipboard?.writeText(full).catch(() => {});
-      window.open(`https://wa.me/?text=${encodeURIComponent(full)}`, "_blank");
-      if (image) toast.info("تم نسخ النص — أرفق الصورة يدوياً في واتساب");
+      if (app === "whatsapp") {
+        if (!image && navigator.share) { await navigator.share({ text: full }); return true; }
+        window.open(`https://wa.me/?text=${encodeURIComponent(full)}`, "_blank");
+      } else {
+        window.open("https://www.tiktok.com/upload", "_blank");
+      }
+      if (image) toast.info("تم نسخ النص — أرفق الصورة يدوياً");
+      return true;
     } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") return;
-      toast.error("تعذّر فتح المشاركة");
+      if (e instanceof DOMException && e.name === "AbortError") return false;
+      return false;
     }
+  };
+
+  const shareWhatsApp = () => shareTo("whatsapp");
+
+  const doFollowUp = async (app: "whatsapp" | "tiktok") => {
+    const ok = await shareTo(app);
+    if (ok) setFollowUps((f) => f.filter((x) => x !== app));
   };
 
   const submit = async () => {
     if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return; }
     if (!selected.length) { toast.error("اختر منصة واحدة على الأقل"); return; }
+    const cloud = selected.filter((p) => p !== "whatsapp" && p !== "tiktok");
+    const manual = (["whatsapp", "tiktok"] as const).filter((p) => selected.includes(p));
+    setFollowUps([...manual]);
     setBusy(true);
+
+    // Open WhatsApp share right away (must happen directly on the tap).
+    const waPromise = manual.includes("whatsapp")
+      ? shareTo("whatsapp").then((ok) => { if (ok) setFollowUps((f) => f.filter((x) => x !== "whatsapp")); })
+      : Promise.resolve();
+
     try {
-      const igImage = image && selected.includes("instagram") ? await toInstagramImage(image) : undefined;
-      const tiktokToken: string | undefined = undefined;
-      let tiktokVideo: string | undefined;
-      if (selected.includes("tiktok") && image) {
-        toast.info("جارٍ تجهيز فيديو تيك توك…");
-        tiktokVideo = await imageToTikTokVideo(image);
+      if (cloud.length) {
+        const igImage = image && cloud.includes("instagram") ? await toInstagramImage(image) : undefined;
+        const results = await publish({
+          data: {
+            text: full,
+            imageDataUrl: image,
+            igImageDataUrl: igImage,
+            targets: cloud.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
+            thumbDataUrl: image ? await makeThumb(image) : undefined,
+          },
+        });
+        const ok = results.filter((r) => r.status === "success").length;
+        if (ok) toast.success(`تم النشر تلقائياً في ${ok} من ${results.length} منصات`);
+        else toast.error(`فشل النشر: ${results.map((r) => r.message).join(" — ")}`);
       }
-      const results = await publish({
-        data: {
-          text: full,
-          imageDataUrl: image,
-          igImageDataUrl: igImage,
-          tiktokToken,
-          tiktokVideoDataUrl: tiktokVideo,
-          targets: selected.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
-          macroUrl: localStorage.getItem("arsh-macrodroid") || undefined,
-          thumbDataUrl: image ? await makeThumb(image) : undefined,
-        },
-      });
-      const ok = results.filter((r) => r.status === "success").length;
-      if (ok) toast.success(`تم النشر — نجح في ${ok} من ${results.length} منصات`);
-      else toast.error(`فشل النشر: ${results.map((r) => r.message).join(" — ")}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "حدث خطأ");
     } finally {
       setBusy(false);
     }
+    await waPromise;
   };
 
   return (
@@ -238,6 +262,18 @@ function Composer() {
         <Button onClick={submit} disabled={busy} size="lg" className="w-full bg-gold text-base font-bold text-primary-foreground">
           <Send className="h-4 w-4" /> {busy ? "جاري النشر..." : `انشر في ${selected.length} منصات`}
         </Button>
+
+        {followUps.length > 0 && !busy && (
+          <div className="space-y-2 rounded-2xl border-2 border-primary bg-accent p-4 shadow-gold">
+            <p className="text-center text-sm font-bold text-accent-foreground">أكمل المشاركة — النص منسوخ والصورة جاهزة</p>
+            {followUps.map((app) => (
+              <Button key={app} onClick={() => doFollowUp(app)} size="lg" className="w-full animate-pulse bg-gold text-lg font-extrabold text-primary-foreground">
+                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : "🎬 الخطوة التالية: مشاركة تيك توك"}
+              </Button>
+            ))}
+            <button onClick={() => setFollowUps([])} className="w-full text-xs text-muted-foreground">تخطي</button>
+          </div>
+        )}
 
         <Button onClick={shareWhatsApp} variant="outline" size="lg" className="w-full text-base font-bold">
           <Share2 className="h-4 w-4" /> مشاركة في واتساب (حالتي + القناة)
