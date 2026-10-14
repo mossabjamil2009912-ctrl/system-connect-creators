@@ -123,6 +123,7 @@ function Composer() {
           tiktokToken,
           tiktokVideoDataUrl: tiktokVideo,
           targets: selected.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
+          macroUrl: localStorage.getItem("arsh-macrodroid") || undefined,
           thumbDataUrl: image ? await makeThumb(image) : undefined,
         },
       });
