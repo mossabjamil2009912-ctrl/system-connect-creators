@@ -8,6 +8,7 @@ interface Input {
   tiktokToken?: string | undefined;
   tiktokVideoDataUrl?: string | undefined;
   targets: { platform: PlatformId; target: string }[];
+  thumbDataUrl?: string | undefined;
 }
 
 async function sendTelegram(chatId: string, text: string, image?: string): Promise<PostResult> {
@@ -152,7 +153,29 @@ export const publishPost = createServerFn({ method: "POST" })
         results.push({ platform: t.platform, status: "error", message: e instanceof Error ? e.message : "خطأ غير معروف" });
       }
     }
+    const ok = results.filter((r) => r.status === "success");
+    if (ok.length) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin.from("post_history").insert({ text: data.text, thumb: data.thumbDataUrl ?? null, results: ok as never });
+      } catch (e) { console.error("history save failed", e); }
+    }
     return results;
+  });
+
+export const listHistory = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("post_history").select("*").order("created_at", { ascending: false }).limit(100);
+  return (data ?? []).map((r) => ({ id: r.id, text: r.text, image: r.thumb ?? undefined, createdAt: r.created_at, results: r.results as unknown as PostResult[] }));
+});
+
+export const deleteHistory = createServerFn({ method: "POST" })
+  .inputValidator((d: { id?: string }) => d)
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (data.id) await supabaseAdmin.from("post_history").delete().eq("id", data.id);
+    else await supabaseAdmin.from("post_history").delete().not("id", "is", null);
+    return { ok: true };
   });
 
 export const checkConnections = createServerFn({ method: "POST" })
