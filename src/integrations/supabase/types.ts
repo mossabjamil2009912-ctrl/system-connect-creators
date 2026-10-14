@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      post_history: {
+        Row: {
+          created_at: string
+          id: string
+          results: Json
+          text: string
+          thumb: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          results?: Json
+          text?: string
+          thumb?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          results?: Json
+          text?: string
+          thumb?: string | null
+        }
+        Relationships: []
+      }
       tiktok_connection: {
         Row: {
           access_token: string
