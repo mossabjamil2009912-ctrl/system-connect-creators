@@ -96,6 +96,15 @@ function Composer() {
     if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return false; }
     try {
       if (full) navigator.clipboard?.writeText(full).catch(() => {});
+      // Text-only WhatsApp: open the regular WhatsApp app directly (no share sheet).
+      if (app === "whatsapp" && !image) {
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const t = encodeURIComponent(full);
+        window.location.href = isAndroid
+          ? `intent://send?text=${t}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${encodeURIComponent(`https://wa.me/?text=${t}`)};end`
+          : `whatsapp://send?text=${t}`;
+        return true;
+      }
       if (image && navigator.canShare) {
         const file = dataUrlToFile(image, "arsh-post.jpg");
         if (navigator.canShare({ files: [file] })) {
@@ -104,7 +113,6 @@ function Composer() {
         }
       }
       if (app === "whatsapp") {
-        if (!image && navigator.share) { await navigator.share({ text: full }); return true; }
         window.open(`https://wa.me/?text=${encodeURIComponent(full)}`, "_blank");
       } else {
         window.open("https://www.tiktok.com/upload", "_blank");
