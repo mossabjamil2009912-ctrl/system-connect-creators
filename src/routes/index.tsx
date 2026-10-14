@@ -127,6 +127,7 @@ function Composer() {
 
   return (
     <div className="space-y-4">
+      <TikTokCallback />
     <div className="sticky top-[86px] z-10 grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 shadow-sm lg:hidden">
       {([["edit", "تحرير المنشور", PenLine], ["preview", "معاينة مباشرة", Eye]] as const).map(([v, l, I]) => (
         <button key={v} onClick={() => setMobileView(v)} className={`flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-bold transition-colors ${mobileView === v ? "bg-gold text-primary-foreground shadow-sm" : "text-muted-foreground"}`}>
