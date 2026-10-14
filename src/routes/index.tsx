@@ -1,3 +1,4 @@
+import { makeThumb } from "@/lib/thumb";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
