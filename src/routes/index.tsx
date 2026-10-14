@@ -83,7 +83,7 @@ function Composer() {
   const [followUps, setFollowUps] = useState<("whatsapp" | "tiktok")[]>([]);
 
   const dataUrlToFile = (url: string, name: string) => {
-    const [head, b64] = url.split(",");
+    const [head = "", b64 = ""] = url.split(",");
     const mime = head.match(/:(.*?);/)?.[1] || "image/jpeg";
     const bin = atob(b64);
     const arr = new Uint8Array(bin.length);
