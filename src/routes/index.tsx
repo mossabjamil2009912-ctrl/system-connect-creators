@@ -107,11 +107,22 @@ function Composer() {
     setBusy(true);
     try {
       const igImage = image && selected.includes("instagram") ? await toInstagramImage(image) : undefined;
+      let tiktokToken: string | undefined;
+      let tiktokVideo: string | undefined;
+      if (selected.includes("tiktok")) {
+        tiktokToken = await getTikTokToken();
+        if (image && tiktokToken) {
+          toast.info("جارٍ تجهيز فيديو تيك توك…");
+          tiktokVideo = await imageToTikTokVideo(image);
+        }
+      }
       const results = await publish({
         data: {
           text: full,
           imageDataUrl: image,
           igImageDataUrl: igImage,
+          tiktokToken,
+          tiktokVideoDataUrl: tiktokVideo,
           targets: selected.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
         },
       });

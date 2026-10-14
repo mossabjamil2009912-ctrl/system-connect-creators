@@ -5,6 +5,8 @@ interface Input {
   text: string;
   imageDataUrl?: string | undefined;
   igImageDataUrl?: string | undefined;
+  tiktokToken?: string | undefined;
+  tiktokVideoDataUrl?: string | undefined;
   targets: { platform: PlatformId; target: string }[];
 }
 
@@ -99,6 +101,31 @@ async function sendInstagram(text: string, image?: string): Promise<PostResult> 
   return { platform: "instagram", status: "error", message: "انتهت مهلة تجهيز الصورة" };
 }
 
+async function sendTikTok(token: string | undefined, text: string, video?: string): Promise<PostResult> {
+  if (!token) return { platform: "tiktok", status: "pending", message: "اربط تيك توك من صفحة الربط أولاً" };
+  if (!video) return { platform: "tiktok", status: "error", message: "تيك توك يتطلب صورة" };
+  const bytes = new Uint8Array(await (await fetch(video)).arrayBuffer());
+  const size = bytes.byteLength;
+  const init = await fetch("https://open.tiktokapis.com/v2/post/publish/video/init/", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json; charset=UTF-8" },
+    body: JSON.stringify({
+      post_info: { title: text.slice(0, 2200), privacy_level: "SELF_ONLY", disable_comment: false, disable_duet: false, disable_stitch: false },
+      source_info: { source: "FILE_UPLOAD", video_size: size, chunk_size: size, total_chunk_count: 1 },
+    }),
+  });
+  const ib = await init.json() as { data?: { upload_url?: string }; error?: { code?: string; message?: string } };
+  const uploadUrl = ib.data?.upload_url;
+  if (!init.ok || !uploadUrl) return { platform: "tiktok", status: "error", message: ib.error?.message || ib.error?.code || `فشل (${init.status})` };
+  const up = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": "video/webm", "Content-Range": `bytes 0-${size - 1}/${size}` },
+    body: bytes,
+  });
+  if (!up.ok) return { platform: "tiktok", status: "error", message: `فشل رفع الفيديو (${up.status})` };
+  return { platform: "tiktok", status: "success", message: "أُرسل إلى تيك توك (خاص لك في وضع التجربة)" };
+}
+
 export const publishPost = createServerFn({ method: "POST" })
   .inputValidator((d: Input) => {
     if (!d.text?.trim() && !d.imageDataUrl) throw new Error("المنشور فارغ");
@@ -114,6 +141,8 @@ export const publishPost = createServerFn({ method: "POST" })
           results.push(await sendFacebook(data.text, data.imageDataUrl));
         } else if (t.platform === "instagram") {
           results.push(await sendInstagram(data.text, data.igImageDataUrl ?? data.imageDataUrl));
+        } else if (t.platform === "tiktok") {
+          results.push(await sendTikTok(data.tiktokToken, data.text, data.tiktokVideoDataUrl));
         } else {
           results.push({ platform: t.platform, status: "pending", message: "بانتظار ربط مفاتيح المنصة" });
         }
