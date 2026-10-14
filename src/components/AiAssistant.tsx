@@ -35,6 +35,17 @@ export function AiAssistant({ onResult }: { onResult: (text: string, tags: strin
         />
         <Button onClick={run} disabled={busy} size="sm" className="shrink-0">{busy ? "يكتب..." : "اكتب لي"}</Button>
       </div>
+      <details className="text-xs text-muted-foreground">
+        <summary className="cursor-pointer font-bold text-foreground">🚀 نصائح لمشاهدات وإعجابات أكثر</summary>
+        <ul className="mt-2 list-disc space-y-1 pr-4">
+          <li>انشر وقت الذروة: 8–10 مساءً، أو 1–2 ظهراً بتوقيت اليمن.</li>
+          <li>استخدم صورة من التصاميم الجاهزة؛ المنشورات المصورة تحصل على تفاعل أكبر.</li>
+          <li>انشر بانتظام: 3–5 منشورات أسبوعياً أفضل من كثرة متقطعة.</li>
+          <li>اختم بسؤال، ورُدّ على كل تعليق في أول ساعة.</li>
+          <li>3–5 هاشتاغات مركّزة أفضل من كثيرة عشوائية.</li>
+          <li>الفيديو القصير (ريلز وتيك توك) يصل لأكبر عدد من غير المتابعين.</li>
+        </ul>
+      </details>
     </div>
   );
 }
