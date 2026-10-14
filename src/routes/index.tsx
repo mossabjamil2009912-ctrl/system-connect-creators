@@ -122,11 +122,12 @@ function Composer() {
           tiktokToken,
           tiktokVideoDataUrl: tiktokVideo,
           targets: selected.map((p) => ({ platform: p, target: settings[p]?.target ?? "" })),
+          thumbDataUrl: image ? await makeThumb(image) : undefined,
         },
       });
-      setHistory([{ id: crypto.randomUUID(), text: full, image, createdAt: new Date().toISOString(), results }, ...history].slice(0, 50));
       const ok = results.filter((r) => r.status === "success").length;
-      toast.success(`تم الإرسال — نجح في ${ok} من ${results.length} منصات`);
+      if (ok) toast.success(`تم النشر — نجح في ${ok} من ${results.length} منصات`);
+      else toast.error(`فشل النشر: ${results.map((r) => r.message).join(" — ")}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "حدث خطأ");
     } finally {
