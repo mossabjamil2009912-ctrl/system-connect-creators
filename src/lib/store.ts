@@ -26,4 +26,12 @@ function useStored<T>(key: string, fallback: T) {
 }
 
 export const useHistory = () => useStored<PostRecord[]>(HISTORY, []);
-export const useSettings = () => useStored<Settings>(SETTINGS, {});
+export const DEFAULT_TELEGRAM = "@ThroneEngineering";
+
+export function useSettings() {
+  const [value, save] = useStored<Settings>(SETTINGS, {});
+  const withDefault: Settings = value.telegram?.target?.trim()
+    ? value
+    : { ...value, telegram: { enabled: value.telegram?.enabled ?? true, target: DEFAULT_TELEGRAM } };
+  return [withDefault, save] as const;
+}
