@@ -264,6 +264,18 @@ function Composer() {
           <Send className="h-4 w-4" /> {busy ? "جاري النشر..." : `انشر في ${selected.length} منصات`}
         </Button>
 
+        {followUps.length > 0 && !busy && (
+          <div className="space-y-2 rounded-2xl border-2 border-primary bg-accent p-4 shadow-gold">
+            <p className="text-center text-sm font-bold text-accent-foreground">أكمل المشاركة — النص منسوخ والصورة جاهزة</p>
+            {followUps.map((app) => (
+              <Button key={app} onClick={() => doFollowUp(app)} size="lg" className="w-full animate-pulse bg-gold text-lg font-extrabold text-primary-foreground">
+                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : "🎬 الخطوة التالية: مشاركة تيك توك"}
+              </Button>
+            ))}
+            <button onClick={() => setFollowUps([])} className="w-full text-xs text-muted-foreground">تخطي</button>
+          </div>
+        )}
+
         <Button onClick={shareWhatsApp} variant="outline" size="lg" className="w-full text-base font-bold">
           <Share2 className="h-4 w-4" /> مشاركة في واتساب (حالتي + القناة)
         </Button>
