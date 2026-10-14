@@ -142,7 +142,9 @@ export const publishPost = createServerFn({ method: "POST" })
         } else if (t.platform === "instagram") {
           results.push(await sendInstagram(data.text, data.igImageDataUrl ?? data.imageDataUrl));
         } else if (t.platform === "tiktok") {
-          results.push(await sendTikTok(data.tiktokToken, data.text, data.tiktokVideoDataUrl));
+          const { getStoredTikTokToken } = await import("./tiktok.server");
+          const token = (await getStoredTikTokToken()) ?? data.tiktokToken;
+          results.push(await sendTikTok(token, data.text, data.tiktokVideoDataUrl));
         } else {
           results.push({ platform: t.platform, status: "pending", message: "بانتظار ربط مفاتيح المنصة" });
         }

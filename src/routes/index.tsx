@@ -6,7 +6,7 @@ import { Bookmark, Check, Eye, FileText, Heart, ImagePlus, MessageCircle, PenLin
 import { TEMPLATES } from "@/lib/templates";
 import { DesignGallery, DESIGNS, toDataUrl } from "@/components/DesignGallery";
 import { AiAssistant } from "@/components/AiAssistant";
-import { TikTokCallback, getTikTokToken } from "@/components/TikTokConnect";
+import { TikTokCallback } from "@/components/TikTokConnect";
 import { imageToTikTokVideo } from "@/lib/tiktok-video";
 
 const DRAFT_KEY = "arsh-draft";
@@ -108,14 +108,11 @@ function Composer() {
     setBusy(true);
     try {
       const igImage = image && selected.includes("instagram") ? await toInstagramImage(image) : undefined;
-      let tiktokToken: string | undefined;
+      const tiktokToken: string | undefined = undefined;
       let tiktokVideo: string | undefined;
-      if (selected.includes("tiktok")) {
-        tiktokToken = await getTikTokToken();
-        if (image && tiktokToken) {
-          toast.info("جارٍ تجهيز فيديو تيك توك…");
-          tiktokVideo = await imageToTikTokVideo(image);
-        }
+      if (selected.includes("tiktok") && image) {
+        toast.info("جارٍ تجهيز فيديو تيك توك…");
+        tiktokVideo = await imageToTikTokVideo(image);
       }
       const results = await publish({
         data: {
