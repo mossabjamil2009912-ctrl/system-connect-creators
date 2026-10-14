@@ -108,7 +108,13 @@ function Composer() {
       if (image && navigator.canShare) {
         const file = dataUrlToFile(image, "arsh-post.jpg");
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], text: full });
+          if (app === "tiktok") {
+            try { await navigator.clipboard.writeText(full); } catch { /* ignore */ }
+            toast.info("اختر تيك توك — الصورة تفتح جاهزة، والنص منسوخ للصق");
+            await navigator.share({ files: [file], title: "عرش الهندسة" });
+          } else {
+            await navigator.share({ files: [file], text: full });
+          }
           return true;
         }
       }
