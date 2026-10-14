@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.lovable.system_connect_creators.twa",
+        "sha256_cert_fingerprints": ["26:AE:A2:C9:FD:8E:30:A5:00:B0:F1:A0:BD:3E:DC:99:BC:43:A3:26:F6:ED:55:DE:84:98:64:3B:F7:42:0C:05"]
+      }
+    }]
