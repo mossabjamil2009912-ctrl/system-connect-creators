@@ -9,6 +9,7 @@ import { useSettings } from "@/lib/store";
 import { useServerFn } from "@tanstack/react-start";
 import { checkConnections } from "@/lib/publish.functions";
 import { TikTokConnectCard } from "@/components/TikTokConnect";
+import { MacroDroidCard } from "@/components/MacroDroidCard";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -77,6 +78,7 @@ function SettingsPage() {
       </section>
       ))}
       <TikTokConnectCard />
+      <MacroDroidCard />
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button onClick={save} size="lg" className="w-full bg-gold font-bold text-primary-foreground sm:w-auto">حفظ</Button>
         <Button onClick={runCheck} disabled={checking} variant="outline" size="lg" className="w-full font-bold sm:w-auto">

@@ -9,6 +9,7 @@ interface Input {
   tiktokVideoDataUrl?: string | undefined;
   targets: { platform: PlatformId; target: string }[];
   thumbDataUrl?: string | undefined;
+  macroUrl?: string | undefined;
 }
 
 async function sendTelegram(chatId: string, text: string, image?: string): Promise<PostResult> {
@@ -127,6 +128,23 @@ async function sendTikTok(token: string | undefined, text: string, video?: strin
   return { platform: "tiktok", status: "success", message: "أُرسل إلى تيك توك (خاص لك في وضع التجربة)" };
 }
 
+const MACRO_PREFIX = "https://trigger.macrodroid.com/";
+
+async function sendMacro(url: string, platform: "whatsapp" | "tiktok", text: string, image?: string): Promise<PostResult> {
+  if (!url.startsWith(MACRO_PREFIX)) return { platform, status: "error", message: "رابط MacroDroid غير صحيح" };
+  let imageUrl = "";
+  if (image && process.env["FACEBOOK_PAGE_ACCESS_TOKEN"]) {
+    const id = await uploadFbPhoto(image, "", false);
+    const info = await (await fetch(`${GRAPH}/${id}?fields=images&access_token=${process.env["FACEBOOK_PAGE_ACCESS_TOKEN"]}`)).json() as { images?: { source: string }[] };
+    imageUrl = info.images?.[0]?.source ?? "";
+  }
+  const base = url.replace(/\/+$/, "").replace(/\/arsh$/, "");
+  const q = new URLSearchParams({ platform, text, image: imageUrl });
+  const res = await fetch(`${base}/arsh?${q}`);
+  if (!res.ok) return { platform, status: "error", message: `لم يصل الأمر للهاتف (${res.status})` };
+  return { platform, status: "success", message: "أُرسل إلى هاتفك — MacroDroid ينشره الآن" };
+}
+
 export const publishPost = createServerFn({ method: "POST" })
   .inputValidator((d: Input) => {
     if (!d.text?.trim() && !d.imageDataUrl) throw new Error("المنشور فارغ");
@@ -142,6 +160,8 @@ export const publishPost = createServerFn({ method: "POST" })
           results.push(await sendFacebook(data.text, data.imageDataUrl));
         } else if (t.platform === "instagram") {
           results.push(await sendInstagram(data.text, data.igImageDataUrl ?? data.imageDataUrl));
+        } else if ((t.platform === "whatsapp" || t.platform === "tiktok") && data.macroUrl) {
+          results.push(await sendMacro(data.macroUrl, t.platform, data.text, data.imageDataUrl));
         } else if (t.platform === "tiktok") {
           const { getStoredTikTokToken } = await import("./tiktok.server");
           const token = (await getStoredTikTokToken()) ?? data.tiktokToken;
