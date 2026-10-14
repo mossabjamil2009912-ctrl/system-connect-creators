@@ -6,6 +6,7 @@ import { Bookmark, Check, Eye, FileText, Heart, ImagePlus, MessageCircle, PenLin
 import { TEMPLATES } from "@/lib/templates";
 import { DesignGallery, DESIGNS, toDataUrl } from "@/components/DesignGallery";
 import { AiAssistant } from "@/components/AiAssistant";
+import { TikTokCallback } from "@/components/TikTokConnect";
 
 const DRAFT_KEY = "arsh-draft";
 const QUICK_TAGS = ["#عرش_الهندسة", "#تطبيقات_جوال", "#أنظمة_ويندوز", "#ربط_API", "#صنعاء_اليمن"];
