@@ -299,18 +299,21 @@ function Composer() {
 
       <section className={`${mobileView === "preview" ? "" : "hidden"} lg:block min-w-0 rounded-2xl border border-border bg-card p-5`}>
         <h2 className="mb-3 font-bold">معاينة المنشور</h2>
-        <Tabs defaultValue="facebook" dir="rtl">
+        <p className="mb-3 rounded-lg bg-accent px-3 py-2 text-xs text-accent-foreground">شكل تقريبي قبل النشر — لم يُنشر بعد. تظهر هنا المنصات التي حددتها فقط.</p>
+        {selected.length === 0 && <p className="text-center text-sm text-muted-foreground">حدد منصة لترى المعاينة.</p>}
+        {selected.length > 0 && (
+        <Tabs key={selected.join(",")} defaultValue={PLATFORMS.find((p) => selected.includes(p.id))?.id} dir="rtl">
           <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
-            {PLATFORMS.map((p) => <TabsTrigger key={p.id} value={p.id} className="shrink-0">{p.name}</TabsTrigger>)}
+            {PLATFORMS.filter((p) => selected.includes(p.id)).map((p) => <TabsTrigger key={p.id} value={p.id} className="shrink-0">{p.name}</TabsTrigger>)}
           </TabsList>
-          {PLATFORMS.map((p) => (
+          {PLATFORMS.filter((p) => selected.includes(p.id)).map((p) => (
             <TabsContent key={p.id} value={p.id}>
               <div className="mt-3 overflow-hidden rounded-xl border border-border bg-background">
                 <div className="flex items-center gap-2 border-b border-border p-3">
                   <img src={icon} alt="" className="h-9 w-9 shrink-0 rounded-full border border-border bg-background object-contain p-0.5" />
                   <div>
                     <div className="text-sm font-bold">عرش الهندسة</div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><PlatformDot hue={p.hue} /> {p.name} · الآن</div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><PlatformDot hue={p.hue} /> {p.name} · معاينة</div>
                   </div>
                 </div>
                 {p.id === "instagram" ? (
