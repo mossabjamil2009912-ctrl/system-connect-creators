@@ -345,6 +345,7 @@ function Composer() {
             </TabsContent>
           ))}
         </Tabs>
+        )}
       </section>
     </div>
     </div>
