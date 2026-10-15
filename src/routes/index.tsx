@@ -1,4 +1,5 @@
 import { makeThumb } from "@/lib/thumb";
+import { stampContact, withContact } from "@/lib/contact";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -68,7 +69,8 @@ function Composer() {
 
   const clearDraft = () => { setText(""); setTags(""); setImage(undefined); localStorage.removeItem(DRAFT_KEY); };
 
-  const full = [text.trim(), tags.trim()].filter(Boolean).join("\n\n");
+  const full = withContact([text.trim(), tags.trim()].filter(Boolean).join("\n\n"));
+  const setImg = (d: string) => { stampContact(d).then(setImage).catch(() => setImage(d)); };
   const tooLong = overLimit(full, selected);
   const noMedia = missingMedia(!!image, selected);
 
