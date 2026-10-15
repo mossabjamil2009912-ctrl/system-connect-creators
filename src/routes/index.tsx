@@ -80,7 +80,7 @@ function Composer() {
     r.readAsDataURL(f);
   };
 
-  const [followUps, setFollowUps] = useState<("whatsapp" | "tiktok")[]>([]);
+  const [followUps, setFollowUps] = useState<("whatsapp" | "tiktok" | "twitter")[]>([]);
 
   const dataUrlToFile = (url: string, name: string) => {
     const [head = "", b64 = ""] = url.split(",");
@@ -92,7 +92,7 @@ function Composer() {
   };
 
   // Returns true when the share sheet opened and the user came back.
-  const shareTo = async (app: "whatsapp" | "tiktok"): Promise<boolean> => {
+  const shareTo = async (app: "whatsapp" | "tiktok" | "twitter"): Promise<boolean> => {
     if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return false; }
     try {
       if (full) navigator.clipboard?.writeText(full).catch(() => {});
@@ -103,6 +103,15 @@ function Composer() {
         window.location.href = isAndroid
           ? `intent://send?text=${t}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${encodeURIComponent(`https://wa.me/?text=${t}`)};end`
           : `whatsapp://send?text=${t}`;
+        return true;
+      }
+      // Text-only X/Twitter: open the X composer directly (free, no API credits).
+      if (app === "twitter" && !image) {
+        const t = encodeURIComponent(full.slice(0, 280));
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        window.location.href = isAndroid
+          ? `intent://post?message=${t}#Intent;scheme=twitter;package=com.twitter.android;S.browser_fallback_url=${encodeURIComponent(`https://x.com/intent/post?text=${t}`)};end`
+          : `https://x.com/intent/post?text=${t}`;
         return true;
       }
       if (image && navigator.canShare) {
@@ -120,6 +129,8 @@ function Composer() {
       }
       if (app === "whatsapp") {
         window.open(`https://wa.me/?text=${encodeURIComponent(full)}`, "_blank");
+      } else if (app === "twitter") {
+        window.open(`https://x.com/intent/post?text=${encodeURIComponent(full.slice(0, 280))}`, "_blank");
       } else {
         window.open("https://www.tiktok.com/upload", "_blank");
       }
@@ -133,7 +144,7 @@ function Composer() {
 
   const shareWhatsApp = () => shareTo("whatsapp");
 
-  const doFollowUp = async (app: "whatsapp" | "tiktok") => {
+  const doFollowUp = async (app: "whatsapp" | "tiktok" | "twitter") => {
     const ok = await shareTo(app);
     if (ok) setFollowUps((f) => f.filter((x) => x !== app));
   };
@@ -141,8 +152,8 @@ function Composer() {
   const submit = async () => {
     if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return; }
     if (!selected.length) { toast.error("اختر منصة واحدة على الأقل"); return; }
-    const cloud = selected.filter((p) => p !== "whatsapp" && p !== "tiktok");
-    const manual = (["whatsapp", "tiktok"] as const).filter((p) => selected.includes(p));
+    const cloud = selected.filter((p) => p !== "whatsapp" && p !== "tiktok" && p !== "twitter");
+    const manual = (["whatsapp", "tiktok", "twitter"] as const).filter((p) => selected.includes(p));
     setFollowUps([...manual]);
     setBusy(true);
 
@@ -282,7 +293,7 @@ function Composer() {
             <p className="text-center text-sm font-bold text-accent-foreground">أكمل المشاركة — النص منسوخ والصورة جاهزة</p>
             {followUps.map((app) => (
               <Button key={app} onClick={() => doFollowUp(app)} size="lg" className="w-full animate-pulse bg-gold text-lg font-extrabold text-primary-foreground">
-                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : "🎬 الخطوة التالية: مشاركة تيك توك"}
+                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : app === "twitter" ? "🐦 الخطوة التالية: مشاركة تويتر / X" : "🎬 الخطوة التالية: مشاركة تيك توك"}
               </Button>
             ))}
             <button onClick={() => setFollowUps([])} className="w-full text-xs text-muted-foreground">تخطي</button>
