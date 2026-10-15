@@ -158,6 +158,9 @@ export const publishPost = createServerFn({ method: "POST" })
           results.push(await sendTelegram(t.target, data.text, data.imageDataUrl));
         } else if (t.platform === "facebook") {
           results.push(await sendFacebook(data.text, data.imageDataUrl));
+        } else if (t.platform === "twitter") {
+          const { sendTwitter } = await import("./twitter.server");
+          results.push(await sendTwitter(data.text, data.imageDataUrl));
         } else if (t.platform === "instagram") {
           results.push(await sendInstagram(data.text, data.igImageDataUrl ?? data.imageDataUrl));
         } else if ((t.platform === "whatsapp" || t.platform === "tiktok") && data.macroUrl) {
@@ -234,5 +237,9 @@ export const checkConnections = createServerFn({ method: "POST" })
         }
       }
     } catch { out["telegram"] = { ok: false, message: "تعذر الاتصال" }; }
+    try {
+      const { checkTwitter } = await import("./twitter.server");
+      out["twitter"] = await checkTwitter();
+    } catch { out["twitter"] = { ok: false, message: "تعذر الاتصال" }; }
     return out;
   });
