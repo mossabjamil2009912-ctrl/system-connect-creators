@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { RotateCcw, Trash2 } from "lucide-react";
-import { PlatformDot } from "@/components/AppShell";
+import { PlatformIcon } from "@/components/PlatformIcon";
 import { platformById, type PostStatus } from "@/lib/platforms";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -60,7 +60,7 @@ function History() {
             <div className="flex flex-wrap gap-2">
               {h.results.filter((r) => r.status === "success").map((r) => (
                 <span key={r.platform} title={r.message} className="flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs">
-                  <PlatformDot hue={platformById(r.platform).hue} /> {platformById(r.platform).name}: {LABEL[r.status]}
+                  <PlatformIcon id={r.platform} /> {platformById(r.platform).name}: {LABEL[r.status]}
                 </span>
               ))}
             </div>
