@@ -105,10 +105,23 @@ function Composer() {
           : `whatsapp://send?text=${t}`;
         return true;
       }
-      // Text-only X/Twitter: open the X composer directly (free, no API credits).
-      if (app === "twitter" && !image) {
+      // X/Twitter: open the public tweet composer directly (free, no API credits).
+      if (app === "twitter") {
         // Public tweet composer (not DM). X app handles this link and opens "Post".
         const t = encodeURIComponent(full.slice(0, 280));
+        if (image) {
+          // Android blocks passing files through a URL, so save the image to the
+          // phone first, then open the composer with the text ready.
+          const a = document.createElement("a");
+          a.href = image;
+          a.download = "arsh-post.jpg";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          toast.info("حُفظت الصورة في هاتفك — داخل X اضغط أيقونة الصورة وأضفها من التنزيلات");
+          window.location.href = `https://x.com/intent/post?text=${t}`;
+          return true;
+        }
         window.location.href = `https://x.com/intent/post?text=${t}`;
         return true;
       }
