@@ -22,6 +22,8 @@ import { publishPost } from "@/lib/publish.functions";
 import { toInstagramImage } from "@/lib/instagram-image";
 import icon from "@/assets/arsh-throne-icon-transparent.png";
 
+const CLOUD = PLATFORMS.filter((p) => !MANUAL.includes(p.id));
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -181,7 +183,7 @@ function Composer() {
     } finally {
       setBusy(false);
     }
-    await waPromise;
+
   };
 
   return (
@@ -283,7 +285,7 @@ function Composer() {
         )}
 
         <Button onClick={submit} disabled={busy} size="lg" className="w-full bg-gold text-base font-bold text-primary-foreground">
-          <Send className="h-4 w-4" /> {busy ? "جاري النشر..." : `انشر في ${selected.length} منصات`}
+          <Send className="h-4 w-4" /> {busy ? "جاري النشر..." : `نشر تلقائي في ${selected.length} منصات`}
         </Button>
 
         <div className="space-y-2 border-t border-border pt-4">
