@@ -140,8 +140,6 @@ function Composer() {
       }
       if (app === "whatsapp") {
         window.open(`https://wa.me/?text=${encodeURIComponent(full)}`, "_blank");
-      } else if (app === "twitter") {
-        window.open(`https://x.com/intent/post?text=${encodeURIComponent(full.slice(0, 280))}`, "_blank");
       } else {
         window.open("https://www.tiktok.com/upload", "_blank");
       }
