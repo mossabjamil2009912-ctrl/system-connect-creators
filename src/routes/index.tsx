@@ -293,7 +293,7 @@ function Composer() {
             <p className="text-center text-sm font-bold text-accent-foreground">أكمل المشاركة — النص منسوخ والصورة جاهزة</p>
             {followUps.map((app) => (
               <Button key={app} onClick={() => doFollowUp(app)} size="lg" className="w-full animate-pulse bg-gold text-lg font-extrabold text-primary-foreground">
-                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : "🎬 الخطوة التالية: مشاركة تيك توك"}
+                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : app === "twitter" ? "🐦 الخطوة التالية: مشاركة تويتر / X" : "🎬 الخطوة التالية: مشاركة تيك توك"}
               </Button>
             ))}
             <button onClick={() => setFollowUps([])} className="w-full text-xs text-muted-foreground">تخطي</button>
