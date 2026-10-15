@@ -107,11 +107,9 @@ function Composer() {
       }
       // Text-only X/Twitter: open the X composer directly (free, no API credits).
       if (app === "twitter" && !image) {
+        // Public tweet composer (not DM). X app handles this link and opens "Post".
         const t = encodeURIComponent(full.slice(0, 280));
-        const isAndroid = /Android/i.test(navigator.userAgent);
-        window.location.href = isAndroid
-          ? `intent://post?message=${t}#Intent;scheme=twitter;package=com.twitter.android;S.browser_fallback_url=${encodeURIComponent(`https://x.com/intent/post?text=${t}`)};end`
-          : `https://x.com/intent/post?text=${t}`;
+        window.location.href = `https://x.com/intent/post?text=${t}`;
         return true;
       }
       if (image && navigator.canShare) {
