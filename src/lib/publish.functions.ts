@@ -23,7 +23,7 @@ async function sendTelegram(chatId: string, text: string, image?: string): Promi
     const form = new FormData();
     form.append("chat_id", chatId);
     form.append("caption", text.slice(0, 1024));
-    form.append("photo", blob, "post.jpg");
+    form.append("photo", blob, blob.type.includes("png") ? "post.png" : "post.jpg");
     res = await fetch(`${base}/sendPhoto`, { method: "POST", headers, body: form });
   } else {
     res = await fetch(`${base}/sendMessage`, {
@@ -44,7 +44,7 @@ async function uploadFbPhoto(image: string, caption: string, published: boolean)
   const pageId = process.env["FACEBOOK_PAGE_ID"]!;
   const blob = await (await fetch(image)).blob();
   const form = new FormData();
-  form.append("source", blob, "post.jpg");
+  form.append("source", blob, blob.type.includes("png") ? "post.png" : "post.jpg");
   form.append("caption", caption);
   form.append("published", String(published));
   form.append("access_token", token);
@@ -79,8 +79,8 @@ async function sendInstagram(text: string, image?: string): Promise<PostResult> 
   if (!image) return { platform: "instagram", status: "error", message: "إنستغرام يتطلب صورة" };
   // Instagram needs a public image URL: host it as an unpublished Facebook photo first.
   const photoId = await uploadFbPhoto(image, "", false);
-  const info = await (await fetch(`${GRAPH}/${photoId}?fields=images&access_token=${token}`)).json() as { images?: { source: string }[] };
-  const url = info.images?.[0]?.source;
+  const info = await (await fetch(`${GRAPH}/${photoId}?fields=images&access_token=${token}`)).json() as { images?: { source: string; width: number; height: number }[] };
+  const url = [...(info.images ?? [])].sort((a, b) => b.width * b.height - a.width * a.height)[0]?.source;
   if (!url) return { platform: "instagram", status: "error", message: "تعذر تجهيز رابط الصورة" };
   const c = await fetch(`${GRAPH}/${igId}/media`, {
     method: "POST",
