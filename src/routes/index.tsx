@@ -81,7 +81,7 @@ function Composer() {
     if (!f) return;
     if (f.size > 16_000_000) { toast.error("الصورة أكبر من 16 ميجا"); return; }
     const r = new FileReader();
-    r.onload = () => setImage(r.result as string);
+    r.onload = () => setImg(r.result as string);
     r.readAsDataURL(f);
   };
 
@@ -209,7 +209,7 @@ function Composer() {
           <div className="mb-2 flex items-center gap-1 text-sm font-bold"><FileText className="h-4 w-4 text-primary" /> قوالب جاهزة</div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {TEMPLATES.map((t) => (
-              <button key={t.name} onClick={() => { setText(t.text); setTags(t.tags); const d = DESIGNS.find((x) => x.label === t.design); if (d) toDataUrl(d.src).then(setImage).catch(() => {}); }} className="shrink-0 rounded-full border border-primary/40 bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-primary hover:text-primary-foreground">
+              <button key={t.name} onClick={() => { setText(t.text); setTags(t.tags); const d = DESIGNS.find((x) => x.label === t.design); if (d) toDataUrl(d.src).then(setImg).catch(() => {}); }} className="shrink-0 rounded-full border border-primary/40 bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-primary hover:text-primary-foreground">
                 {t.name}
               </button>
             ))}
@@ -253,7 +253,7 @@ function Composer() {
               <ImagePlus className="h-5 w-5" /> أضف صورة من جهازك
               <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
             </label>
-            <DesignGallery onPick={setImage} />
+            <DesignGallery onPick={setImg} />
           </div>
         )}
 
