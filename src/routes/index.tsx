@@ -327,7 +327,7 @@ function Composer() {
                     <div className="max-w-[90%] overflow-hidden rounded-2xl rounded-ss-sm border border-border bg-background shadow-sm">
                       {image && <img src={image} alt="" className="max-h-72 w-full object-cover" />}
                       <p className="whitespace-pre-wrap p-3 pb-1 text-sm">{full ? full.slice(0, p.limit) : <span className="text-muted-foreground">سيظهر نص منشورك هنا...</span>}</p>
-                      <div className="flex items-center justify-end gap-1 px-3 pb-2 text-[11px] text-muted-foreground"><Eye className="h-3 w-3" /> 1.2K · الآن</div>
+                      <div className="flex items-center justify-end gap-1 px-3 pb-2 text-[11px] text-muted-foreground"><Eye className="h-3 w-3" /> معاينة</div>
                     </div>
                   </div>
                 ) : (
