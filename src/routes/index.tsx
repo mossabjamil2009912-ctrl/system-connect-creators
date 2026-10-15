@@ -11,6 +11,7 @@ import { TikTokCallback } from "@/components/TikTokConnect";
 
 const DRAFT_KEY = "arsh-draft";
 const QUICK_TAGS = ["#عرش_الهندسة", "#تطبيقات_جوال", "#أنظمة_ويندوز", "#ربط_API", "#صنعاء_اليمن"];
+const MANUAL: string[] = ["whatsapp", "tiktok", "twitter"];
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,7 +40,7 @@ function Composer() {
   const [text, setText] = useState("");
   const [tags, setTags] = useState("");
   const [image, setImage] = useState<string>();
-  const [selected, setSelected] = useState<PlatformId[]>(PLATFORMS.map((p) => p.id));
+  const [selected, setSelected] = useState<PlatformId[]>(CLOUD.map((p) => p.id));
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
@@ -156,16 +157,8 @@ function Composer() {
   const submit = async () => {
     if (!full && !image) { toast.error("اكتب نص المنشور أو أضف صورة"); return; }
     if (!selected.length) { toast.error("اختر منصة واحدة على الأقل"); return; }
-    const cloud = selected.filter((p) => p !== "whatsapp" && p !== "tiktok" && p !== "twitter");
-    const manual = (["whatsapp", "tiktok", "twitter"] as const).filter((p) => selected.includes(p));
-    setFollowUps([...manual]);
+    const cloud = selected.filter((p) => !MANUAL.includes(p));
     setBusy(true);
-
-    // Open the first manual app right away (must happen directly on the tap).
-    const first = manual.includes("whatsapp") ? "whatsapp" : manual.includes("twitter") ? "twitter" : manual[0];
-    const waPromise = first
-      ? shareTo(first).then((ok) => { if (ok) setFollowUps((f) => f.filter((x) => x !== first)); })
-      : Promise.resolve();
 
     try {
       if (cloud.length) {
@@ -262,13 +255,13 @@ function Composer() {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-bold">المنصات <span className="text-xs font-normal text-muted-foreground">· تم تحديد {selected.length} من {PLATFORMS.length}</span></h2>
-            <button className="text-xs text-primary" onClick={() => setSelected(selected.length === PLATFORMS.length ? [] : PLATFORMS.map((p) => p.id))}>
-              {selected.length === PLATFORMS.length ? "إلغاء الكل" : "تحديد الكل"}
+            <h2 className="font-bold">النشر التلقائي <span className="text-xs font-normal text-muted-foreground">· تم تحديد {selected.length} من {CLOUD.length}</span></h2>
+            <button className="text-xs text-primary" onClick={() => setSelected(selected.length === CLOUD.length ? [] : CLOUD.map((p) => p.id))}>
+              {selected.length === CLOUD.length ? "إلغاء الكل" : "تحديد الكل"}
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {PLATFORMS.map((p) => {
+            {CLOUD.map((p) => {
               const on = selected.includes(p.id);
               return (
                 <button key={p.id} type="button" onClick={() => toggle(p.id)} aria-pressed={on}
@@ -293,24 +286,18 @@ function Composer() {
           <Send className="h-4 w-4" /> {busy ? "جاري النشر..." : `انشر في ${selected.length} منصات`}
         </Button>
 
-        {followUps.length > 0 && !busy && (
-          <div className="space-y-2 rounded-2xl border-2 border-primary bg-accent p-4 shadow-gold">
-            <p className="text-center text-sm font-bold text-accent-foreground">أكمل المشاركة — النص منسوخ والصورة جاهزة</p>
-            {followUps.map((app) => (
-              <Button key={app} onClick={() => doFollowUp(app)} size="lg" className="w-full animate-pulse bg-gold text-lg font-extrabold text-primary-foreground">
-                {app === "whatsapp" ? "📲 مشاركة واتساب (اختر حالتي)" : app === "twitter" ? "🐦 الخطوة التالية: مشاركة تويتر / X" : "🎬 الخطوة التالية: مشاركة تيك توك"}
-              </Button>
-            ))}
-            <button onClick={() => setFollowUps([])} className="w-full text-xs text-muted-foreground">تخطي</button>
-          </div>
-        )}
-
-        <Button onClick={shareWhatsApp} variant="outline" size="lg" className="w-full text-base font-bold">
-          <Share2 className="h-4 w-4" /> مشاركة في واتساب (حالتي + القناة)
-        </Button>
-        <p className="text-center text-xs text-muted-foreground">
-          تفتح نافذة واتساب والصورة والنص جاهزان — اختر «حالتي» وقناتك معاً ثم أرسل.
-        </p>
+        <div className="space-y-2 border-t border-border pt-4">
+          <h2 className="font-bold">مشاركة يدوية</h2>
+          <Button onClick={() => shareTo("whatsapp")} variant="outline" size="lg" className="w-full text-base font-bold">
+            <Share2 className="h-4 w-4" /> مشاركة واتساب
+          </Button>
+          <Button onClick={() => shareTo("twitter")} variant="outline" size="lg" className="w-full text-base font-bold">
+            <Share2 className="h-4 w-4" /> مشاركة تويتر / X
+          </Button>
+          <Button onClick={() => shareTo("tiktok")} variant="outline" size="lg" className="w-full text-base font-bold">
+            <Share2 className="h-4 w-4" /> مشاركة تيك توك
+          </Button>
+        </div>
       </section>
 
       <section className={`${mobileView === "preview" ? "" : "hidden"} lg:block min-w-0 rounded-2xl border border-border bg-card p-5`}>
