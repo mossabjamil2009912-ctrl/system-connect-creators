@@ -109,18 +109,13 @@ function Composer() {
       if (app === "twitter") {
         // Public tweet composer (not DM). X app handles this link and opens "Post".
         const t = encodeURIComponent(full.slice(0, 280));
-        if (image) {
-          // Android blocks passing files through a URL, so save the image to the
-          // phone first, then open the composer with the text ready.
-          const a = document.createElement("a");
-          a.href = image;
-          a.download = "arsh-post.jpg";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          toast.info("حُفظت الصورة في هاتفك — داخل X اضغط أيقونة الصورة وأضفها من التنزيلات");
-          window.location.href = `https://x.com/intent/post?text=${t}`;
-          return true;
+        if (image && navigator.canShare) {
+          const file = dataUrlToFile(image, "arsh-post.jpg");
+          if (navigator.canShare({ files: [file], text: full })) {
+            toast.info("اختر X ثم «نشر/Post» — ليس رسالة");
+            await navigator.share({ files: [file], text: full.slice(0, 280) });
+            return true;
+          }
         }
         window.location.href = `https://x.com/intent/post?text=${t}`;
         return true;
