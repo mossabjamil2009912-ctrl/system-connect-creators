@@ -11,14 +11,16 @@ export async function toInstagramImage(dataUrl: string): Promise<string> {
   let cw = w, ch = h;
   if (ratio > 1.91) { cw = w; ch = Math.round(w / 1); } // too wide -> square canvas
   else if (ratio < 0.8) { ch = h; cw = Math.round(h * 0.8); } // too tall -> 4:5
-  const scale = Math.min(1, 1440 / Math.max(cw, ch));
+  if (cw === w && ch === h && Math.max(w, h) <= 2048) return dataUrl; // already valid: keep original quality
+  const scale = Math.min(1, 2048 / Math.max(cw, ch));
   const W = Math.round(cw * scale), H = Math.round(ch * scale);
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
   const ctx = c.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
   ctx.fillStyle = "#0b0b0b";
   ctx.fillRect(0, 0, W, H);
   const dw = w * scale, dh = h * scale;
   ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-  return c.toDataURL("image/jpeg", 0.92);
+  return c.toDataURL("image/jpeg", 0.97);
 }

@@ -77,7 +77,7 @@ function Composer() {
 
   const onFile = (f?: File) => {
     if (!f) return;
-    if (f.size > 4_000_000) { toast.error("الصورة أكبر من 4 ميجا"); return; }
+    if (f.size > 16_000_000) { toast.error("الصورة أكبر من 16 ميجا"); return; }
     const r = new FileReader();
     r.onload = () => setImage(r.result as string);
     r.readAsDataURL(f);
@@ -113,7 +113,7 @@ function Composer() {
         // Public tweet composer (not DM). X app handles this link and opens "Post".
         const t = encodeURIComponent(full.slice(0, 280));
         if (image && navigator.canShare) {
-          const file = dataUrlToFile(image, "arsh-post.jpg");
+          const file = dataUrlToFile(image, image.startsWith("data:image/png") ? "arsh-post.png" : "arsh-post.jpg");
           if (navigator.canShare({ files: [file], text: full })) {
             toast.info("اختر X ثم «نشر/Post» — ليس رسالة");
             await navigator.share({ files: [file], text: full.slice(0, 280) });
@@ -124,7 +124,7 @@ function Composer() {
         return true;
       }
       if (image && navigator.canShare) {
-        const file = dataUrlToFile(image, "arsh-post.jpg");
+        const file = dataUrlToFile(image, image.startsWith("data:image/png") ? "arsh-post.png" : "arsh-post.jpg");
         if (navigator.canShare({ files: [file] })) {
           if (app === "tiktok") {
             try { await navigator.clipboard.writeText(full); } catch { /* ignore */ }
