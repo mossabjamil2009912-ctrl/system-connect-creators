@@ -157,9 +157,10 @@ function Composer() {
     setFollowUps([...manual]);
     setBusy(true);
 
-    // Open WhatsApp share right away (must happen directly on the tap).
-    const waPromise = manual.includes("whatsapp")
-      ? shareTo("whatsapp").then((ok) => { if (ok) setFollowUps((f) => f.filter((x) => x !== "whatsapp")); })
+    // Open the first manual app right away (must happen directly on the tap).
+    const first = manual.includes("whatsapp") ? "whatsapp" : manual.includes("twitter") ? "twitter" : manual[0];
+    const waPromise = first
+      ? shareTo(first).then((ok) => { if (ok) setFollowUps((f) => f.filter((x) => x !== first)); })
       : Promise.resolve();
 
     try {
