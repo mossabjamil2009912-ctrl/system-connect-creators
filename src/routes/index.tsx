@@ -16,7 +16,7 @@ const MANUAL: string[] = ["whatsapp", "tiktok", "twitter"];
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlatformDot } from "@/components/AppShell";
+import { PlatformIcon } from "@/components/PlatformIcon";
 import { PLATFORMS, missingMedia, overLimit, platformById, type PlatformId } from "@/lib/platforms";
 import { useHistory, useSettings } from "@/lib/store";
 import { publishPost } from "@/lib/publish.functions";
@@ -270,7 +270,7 @@ function Composer() {
               return (
                 <button key={p.id} type="button" onClick={() => toggle(p.id)} aria-pressed={on}
                   className={`relative flex min-w-0 items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-start text-sm transition-all ${on ? "border-primary bg-accent font-bold text-accent-foreground shadow-sm" : "border-border bg-secondary text-muted-foreground"}`}>
-                  <PlatformDot hue={p.hue} />
+                  <PlatformIcon id={p.id} />
                   <span className="truncate">{p.name}</span>
                   {on && <Check className="ms-auto h-4 w-4 shrink-0 text-primary" />}
                 </button>
@@ -293,13 +293,13 @@ function Composer() {
         <div className="space-y-2 border-t border-border pt-4">
           <h2 className="font-bold">مشاركة يدوية</h2>
           <Button onClick={() => shareTo("whatsapp")} variant="outline" size="lg" className="w-full text-base font-bold">
-            <Share2 className="h-4 w-4" /> مشاركة واتساب
+            <PlatformIcon id="whatsapp" className="h-5 w-5" /> مشاركة واتساب
           </Button>
           <Button onClick={() => shareTo("twitter")} variant="outline" size="lg" className="w-full text-base font-bold">
-            <Share2 className="h-4 w-4" /> مشاركة تويتر / X
+            <PlatformIcon id="twitter" className="h-5 w-5" /> مشاركة تويتر / X
           </Button>
           <Button onClick={() => shareTo("tiktok")} variant="outline" size="lg" className="w-full text-base font-bold">
-            <Share2 className="h-4 w-4" /> مشاركة تيك توك
+            <PlatformIcon id="tiktok" className="h-5 w-5" /> مشاركة تيك توك
           </Button>
         </div>
       </section>
@@ -311,7 +311,7 @@ function Composer() {
         {selected.length > 0 && (
         <Tabs key={selected.join(",")} defaultValue={PLATFORMS.find((p) => selected.includes(p.id))?.id ?? "facebook"} dir="rtl">
           <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
-            {PLATFORMS.filter((p) => selected.includes(p.id)).map((p) => <TabsTrigger key={p.id} value={p.id} className="shrink-0">{p.name}</TabsTrigger>)}
+            {PLATFORMS.filter((p) => selected.includes(p.id)).map((p) => <TabsTrigger key={p.id} value={p.id} className="shrink-0 gap-1"><PlatformIcon id={p.id} />{p.name}</TabsTrigger>)}
           </TabsList>
           {PLATFORMS.filter((p) => selected.includes(p.id)).map((p) => (
             <TabsContent key={p.id} value={p.id}>
@@ -320,7 +320,7 @@ function Composer() {
                   <img src={icon} alt="" className="h-9 w-9 shrink-0 rounded-full border border-border bg-background object-contain p-0.5" />
                   <div>
                     <div className="text-sm font-bold">عرش الهندسة</div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><PlatformDot hue={p.hue} /> {p.name} · معاينة</div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><PlatformIcon id={p.id} /> {p.name} · معاينة</div>
                   </div>
                 </div>
                 {p.id === "instagram" ? (

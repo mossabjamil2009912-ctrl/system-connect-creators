@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlatformDot } from "@/components/AppShell";
+import { PlatformIcon } from "@/components/PlatformIcon";
 import { PLATFORMS } from "@/lib/platforms";
 import { useSettings } from "@/lib/store";
 import { useServerFn } from "@tanstack/react-start";
@@ -59,7 +59,7 @@ function SettingsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {list.map((p) => (
           <div key={p.id} className={`space-y-3 rounded-2xl border bg-card p-4 ${READY.includes(p) ? "border-s-4 border-success" : "border-border opacity-90"}`}>
-            <div className="flex items-center gap-2 font-bold"><PlatformDot hue={p.hue} /> {p.name}</div>
+            <div className="flex items-center gap-2 font-bold"><PlatformIcon id={p.id} /> {p.name}</div>
             <p className="text-xs text-muted-foreground">{p.setup}</p>
             <Input
               placeholder={p.id === "telegram" ? "@arsh_channel" : p.id === "whatsapp" ? "967xxxxxxxxx" : "معرّف الحساب أو الصفحة"}
