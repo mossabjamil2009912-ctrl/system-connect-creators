@@ -302,7 +302,7 @@ function Composer() {
         <p className="mb-3 rounded-lg bg-accent px-3 py-2 text-xs text-accent-foreground">شكل تقريبي قبل النشر — لم يُنشر بعد. تظهر هنا المنصات التي حددتها فقط.</p>
         {selected.length === 0 && <p className="text-center text-sm text-muted-foreground">حدد منصة لترى المعاينة.</p>}
         {selected.length > 0 && (
-        <Tabs key={selected.join(",")} defaultValue={PLATFORMS.find((p) => selected.includes(p.id))?.id} dir="rtl">
+        <Tabs key={selected.join(",")} defaultValue={PLATFORMS.find((p) => selected.includes(p.id))?.id ?? "facebook"} dir="rtl">
           <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
             {PLATFORMS.filter((p) => selected.includes(p.id)).map((p) => <TabsTrigger key={p.id} value={p.id} className="shrink-0">{p.name}</TabsTrigger>)}
           </TabsList>
